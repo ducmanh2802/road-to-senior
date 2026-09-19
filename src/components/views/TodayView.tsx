@@ -253,8 +253,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onNavigate }) => {
         <EmptyState
           title="No tasks match filter"
           description="There are no engineering tasks found for this category today. Create a custom task or reset your filter."
-          actionLabel="Reset Filter"
-          onAction={() => setFilterCategory('ALL')}
+          action={{ label: 'Reset Filter', onClick: () => setFilterCategory('ALL') }}
         />
       ) : (
         <div className="space-y-3">

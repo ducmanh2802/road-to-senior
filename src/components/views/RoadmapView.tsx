@@ -127,11 +127,10 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ onNavigate }) => {
             <EmptyState
               title="No days match filter"
               description="No curriculum days found for this search or phase filter. Try resetting your query."
-              actionLabel="Reset Search & Phase"
-              onAction={() => {
+              action={{ label: 'Reset Search & Phase', onClick: () => {
                 setSearchQuery('');
                 setSelectedPhase(0);
-              }}
+              } }}
             />
           ) : (
             filteredDays.map(day => {

@@ -11,7 +11,7 @@ Completed phases:
   - Phase 001 (f74fed7) — platform baseline: governance v1, 2 TS fixes, ADRs 1-3
   - Phase 002 (ea95274) — Vue shell: AppShell/Sidebar/TopBar, 22 routes,
     CommandPalette, states, slice /learning/java, TS 5.9.3 (ADR-004), npm lockfile (ADR-005)
-  - Phase 003 (8b735d2) — First real vertical slice: Command Center page (route /),
+  - Phase 003 (59bae41) — First real vertical slice: Command Center page (route /),
     Pinia learning store, StatCard, ProgressBar, CommandCenterPage, React slice retired
 Active work: none
 

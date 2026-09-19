@@ -1,0 +1,6 @@
+{
+  "name": "Senior Java 180",
+  "description": "Full-Stack Learning OS & Engineering Dashboard for Senior Java Backend, Spring Boot, Microservices, System Design, DSA, English, Claude Code and Interview Mastery.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

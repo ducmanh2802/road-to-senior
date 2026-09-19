@@ -34,3 +34,23 @@ Reason: preserve existing user state and backup/import compatibility.
 Alternatives: new unified schema + migration.
 Trade-offs: legacy blob shape retained until a dedicated schema-migration phase.
 Impact: no data loss; `validateBackupJson` semantics preserved.
+
+## ADR-004 — TypeScript 7.0.2 (native preview) → 5.9.3 stable
+
+Date: 2026-09-19
+Status: Accepted
+Decision: Downgrade devDependency `typescript` from ^7.0.2 (native-port preview) to ~5.9.3 stable.
+Reason: `vue-tsc` (required for Vue SFC typecheck) is incompatible with TS7 preview
+(no `./lib/tsc` export); policy requires "latest stable compatible with the ecosystem".
+Alternatives: keep TS7 and skip SFC typechecking (rejected — loses type safety).
+Trade-offs: version pin change; React code typechecked green on 5.9.3 (verified).
+Impact: `npm run typecheck` = vue-tsc --noEmit; `npm run lint` = tsc --noEmit (both green).
+
+## ADR-005 — npm lockfile becomes canonical (bun.lock retired)
+
+Date: 2026-09-19
+Status: Accepted
+Decision: Track `package-lock.json`; remove stale `bun.lock` (cannot be regenerated —
+bun is not installed in this environment).
+Reason: dependency tree must have one authoritative lockfile matching the installed toolchain.
+Alternatives: keep both (drift risk). Impact: npm is the canonical package manager.

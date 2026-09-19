@@ -6,7 +6,6 @@ import { MobileNav } from './components/layout/MobileNav';
 import { ShortcutsModal } from './components/modals/ShortcutsModal';
 import { CommandPalette } from './components/modals/CommandPalette';
 
-import { DashboardView } from './components/views/DashboardView';
 import { TodayView } from './components/views/TodayView';
 import { RoadmapView } from './components/views/RoadmapView';
 import { KnowledgeView } from './components/views/KnowledgeView';
@@ -107,7 +106,11 @@ const MainAppContent: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <DashboardView onNavigate={setCurrentView} />;
+        return (
+          <div className="p-8 text-center text-sm text-[#94A3B8] border border-dashed border-[#1E293B] rounded-lg">
+            Dashboard slice retired — migrated to Vue at / (Command Center)
+          </div>
+        );
       case 'today':
         return <TodayView onNavigate={setCurrentView} />;
       case 'roadmap':
@@ -141,7 +144,11 @@ const MainAppContent: React.FC = () => {
       case 'settings':
         return <SettingsView />;
       default:
-        return <DashboardView onNavigate={setCurrentView} />;
+        return (
+          <div className="p-8 text-center text-sm text-[#94A3B8] border border-dashed border-[#1E293B] rounded-lg">
+            Dashboard slice retired — migrated to Vue at / (Command Center)
+          </div>
+        );
     }
   };
 

@@ -34,6 +34,32 @@ Update navigation registries (Sidebar config derives from router table).
 ### Step 7 — update CURRENT
 State: slice done, React surface remaining (shrinking list).
 
+## Proven Migration Workflow (Phase 003 Verified)
+
+```text
+AUDIT
+→ SELECT SLICE
+→ MAP ROUTE/API/STATE
+→ IMPLEMENT VUE VIEW
+→ IMPLEMENT DATA FLOW
+→ PRESERVE STATES
+→ PRESERVE INTERACTIONS
+→ TEST
+→ E2E
+→ RETIRE REACT SLICE
+→ VERIFY
+→ UPDATE STATE
+→ COMMIT
+→ STOP
+```
+
+### Proven Lessons from Phase 003
+1. **State Hydration:** Shared persistent state should live in a Pinia store (`src/vue/stores/`) that reads directly from `localStorage[STORAGE_KEY]` and delegates calculations to pure TypeScript engines in `src/engines/`. No schema modifications or fake data.
+2. **Reusable UI Primitives:** Extract clear, reusable components (`StatCard.vue`, `ProgressBar.vue`) into `src/vue/components/` with accessible roles (`progressbar`, labelled buttons, focus rings) for re-use in future slices.
+3. **Explicit State Support:** The view must support loading (`LoadingSkeleton`), error (`ErrorState` with retry), empty (`EmptyState` without synthetic metrics), and success states.
+4. **React Retirement Scoping:** Retire only the target slice view (`git rm src/components/views/<View>.tsx`). In `src/App.tsx`, replace the route case with a retired placeholder. Run ripgrep to confirm 0 lingering references before running verification.
+5. **Route Resolution:** Lazy-loaded route components in Vue Router (`() => import(...)`) resolve asynchronously on `router.push()`; route assertions should inspect `router.currentRoute.value.matched[0].components.default`.
+
 ## Verification
 typecheck (vue-tsc + tsc) · vitest (affected files) · vite build · git diff scoped.
 
@@ -49,3 +75,4 @@ STATUS / slice map / files changed / tests / commit / next slice.
 
 ## Token Rules
 Read only the slice + its direct dependencies. Summarize diffs.
+

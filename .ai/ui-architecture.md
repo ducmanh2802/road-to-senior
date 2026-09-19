@@ -10,14 +10,17 @@ src/vue/
 │   └── TopBar.vue          # breadcrumb + palette trigger + mobile nav toggle
 ├── components/
 │   ├── CommandPalette.vue  # ⌘K palette (routes only, honest empty state)
-│   └── PageHeader.vue, EmptyState.vue, ErrorState.vue, LoadingSkeleton.vue
+│   ├── PageHeader.vue, EmptyState.vue, ErrorState.vue, LoadingSkeleton.vue
+│   └── StatCard.vue, ProgressBar.vue
 ├── pages/                  # route components (vertical slices)
+│   ├── CommandCenterPage.vue# Phase 003 migrated vertical slice (route '/')
 │   ├── PagePlaceholder.vue # "Coming next" for unimplemented routes
 │   └── LearningJavaPage.vue# representative vertical slice
 ├── router/index.ts         # canonical route table (single source of truth)
 ├── composables/            # reusable behavior (useActiveRoute)
 ├── config/navigation.ts    # sidebar IA derived from route table
-├── stores/                 # Pinia (empty yet — add only for shared state)
+├── stores/
+│   └── learning.ts         # Pinia learning store (localStorage + engines)
 └── shims-vue.d.ts
 ```
 

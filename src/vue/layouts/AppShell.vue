@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import Sidebar from './Sidebar.vue';
 import TopBar from './TopBar.vue';
+import CommandPalette from '../components/CommandPalette.vue';
 
 const isMobileNavOpen = ref(false);
 const isPaletteOpen = ref(false);

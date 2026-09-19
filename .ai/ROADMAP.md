@@ -1,20 +1,17 @@
-# ROADMAP
+# ROADMAP (high-level phases only)
 
-High-level tracks. Each topic follows the loop:
+```
+Phase 001 — Platform + Governance              DONE (f74fed7)
+Phase 002 — Vue Foundation + Shell             DONE (ea95274)
+Phase 003 — Command Center page                NEXT
+Phase 004+ — Vertical-slice migration          (one slice per phase)
+   … /learning tracks → /build → /architecture
+   … → /certifications (AWS AIF-C01) → /interview → /review
+Phase 0XX — React Removal (after last slice)   FINAL
+```
+
+Topic loop for every learning track:
 LEARN → DESIGN → BUILD → BREAK → DEBUG → OPTIMIZE → EXPLAIN → DEFEND → REVIEW → INTERVIEW
 
-```
-FOUNDATION
-↓ JAVA  ↓ SPRING  ↓ DATABASE
-↓ MICROSERVICES  ↓ KAFKA  ↓ REDIS
-↓ DISTRIBUTED SYSTEMS  ↓ SYSTEM DESIGN
-↓ AWS
-↓ AWS AIF-C01          ← exam end of September 2026
-↓ SOLUTION ARCHITECTURE
-↓ GENAI
-↓ PRODUCTION ENGINEERING
-↓ INTERVIEW
-```
-
-Detailed lesson content lives in the app content system, not here.
-Phase history lives in `.ai/phases/`.
+AWS AIF-C01 (exam ~end Sep 2026) and solution-architecture labs arrive as vertical
+slices after the shell migration stabilizes. Details live in phase records, not here.

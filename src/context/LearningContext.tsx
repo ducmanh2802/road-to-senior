@@ -1,36 +1,36 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { 
-  LearningTask, 
-  TaskState, 
-  RoadmapDay, 
-  KnowledgeTopic, 
-  MasteryDimensions, 
-  KnowledgeStatus, 
-  ReviewCard, 
-  ReviewGrade, 
-  DSAProblem, 
-  SystemDesignProblem, 
-  ClaudeCodeExercise, 
-  EnglishSession, 
-  ProjectFeature, 
-  IncidentScenario, 
-  InterviewQuestion, 
-  MockInterviewSession, 
-  CompetencyReadiness 
+import {
+  LearningTask,
+  TaskState,
+  RoadmapDay,
+  KnowledgeTopic,
+  MasteryDimensions,
+  KnowledgeStatus,
+  ReviewCard,
+  ReviewGrade,
+  DSAProblem,
+  SystemDesignProblem,
+  ClaudeCodeExercise,
+  EnglishSession,
+  ProjectFeature,
+  IncidentScenario,
+  InterviewQuestion,
+  MockInterviewSession,
+  CompetencyReadiness
 } from '../types';
-import { 
-  INITIAL_ROADMAP_DAYS, 
-  INITIAL_TASKS, 
-  INITIAL_KNOWLEDGE_TOPICS, 
-  INITIAL_REVIEW_CARDS, 
-  INITIAL_DSA_PROBLEMS, 
-  INITIAL_SYSTEM_DESIGN_PROBLEMS, 
-  INITIAL_CLAUDE_CODE_EXERCISES, 
-  INITIAL_ENGLISH_SESSIONS, 
-  INITIAL_PROJECT_FEATURES, 
-  INITIAL_INCIDENTS, 
-  INITIAL_INTERVIEW_QUESTIONS 
+import {
+  INITIAL_ROADMAP_DAYS,
+  INITIAL_TASKS,
+  INITIAL_KNOWLEDGE_TOPICS,
+  INITIAL_REVIEW_CARDS,
+  INITIAL_DSA_PROBLEMS,
+  INITIAL_SYSTEM_DESIGN_PROBLEMS,
+  INITIAL_CLAUDE_CODE_EXERCISES,
+  INITIAL_ENGLISH_SESSIONS,
+  INITIAL_PROJECT_FEATURES,
+  INITIAL_INCIDENTS,
+  INITIAL_INTERVIEW_QUESTIONS
 } from '../data/seedData';
 import { calculateSm2Review } from '../engines/sm2';
 import { calculateCompetencies, evaluateTopicDimensions, findWeakestDimension } from '../engines/competency';
@@ -55,7 +55,7 @@ interface LearningContextType {
   incidents: IncidentScenario[];
   interviewQuestions: InterviewQuestion[];
   mockInterviews: MockInterviewSession[];
-  
+
   // Actions
   setTaskState: (taskId: string, state: TaskState) => void;
   addTask: (task: Omit<LearningTask, 'id'>) => void;
@@ -73,7 +73,7 @@ interface LearningContextType {
   resolveIncident: (incidentId: string, postmortemData?: IncidentScenario['postmortem']) => void;
   recordMockInterview: (interview: Omit<MockInterviewSession, 'id'>) => void;
   createReviewCardFromMistake: (question: string, expectedAnswer: string, category: string) => void;
-  
+
   // Computations
   getWeakestDimension: () => { topicTitle: string; dimension: string; score: number; action: string } | null;
   getNextBestAction: () => { title: string; category: string; description: string; targetView: string; actionLabel: string };
@@ -355,7 +355,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateKnowledgeStatus = (topicId: string, status: KnowledgeStatus) => {
-    setKnowledgeTopics(prev => prev.map(topic => 
+    setKnowledgeTopics(prev => prev.map(topic =>
       topic.id === topicId ? { ...topic, status, updatedAt: new Date().toISOString() } : topic
     ));
   };
@@ -391,7 +391,7 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateClaudeCodeExercise = (exerciseId: string, status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED', notes?: string) => {
-    setClaudeCodeExercises(prev => prev.map(c => 
+    setClaudeCodeExercises(prev => prev.map(c =>
       c.id === exerciseId ? { ...c, status, notes: notes || c.notes } : c
     ));
   };

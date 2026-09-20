@@ -130,4 +130,3 @@ describe('CommandPalette', () => {
     wrapper.unmount();
   });
 });
-

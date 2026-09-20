@@ -1,52 +1,37 @@
-# Phase 007 – Additional slice (e.g., Review page)
+# Phase 007 — Settings & State Backup Slice
 
 ## Objective
-Migrate an additional real React feature to Vue 3. For this placeholder we reference a **Review page**.
+Migrate the Settings & State Backup feature from React (`SettingsView.tsx`) to Vue 3 (`SettingsPage.vue`), fully integrating with Pinia, LocalStorage persistence, active day override, and complete JSON state export/import.
 
-## Prerequisites
-- Phase 005 completed (UI slice placeholder).
-- Vue routing infrastructure present.
+## Execution Summary
+- **Source Component**: `src/components/views/SettingsView.tsx` (React reference)
+- **Target Component**: `src/vue/pages/SettingsPage.vue` (Vue 3 SFC)
+- **Route**: `/settings` (Registered in `src/vue/router/index.ts`, titled `Settings & Local Storage`)
+- **Navigation**: Added to `src/vue/config/navigation.ts` and `src/vue/components/CommandPalette.vue`
+- **Store Integration**:
+  - `src/vue/stores/learning.ts` augmented with:
+    - `setCurrentDay(day: number): void`
+    - `exportDataAsJson(): string`
+    - `importDataFromJson(jsonString: string): boolean`
+    - `resetToDemo(): void` (pre-existing, confirmed functional)
+- **Test Suite**: `src/vue/__tests__/settings.test.ts` (6 tests, all PASS)
+  - Page mounting and structural rendering
+  - Active day override with input bound to store
+  - State JSON export with Blob URL creation
+  - State restoration from valid JSON payload
+  - Error resilience against malformed/corrupted JSON payloads
+  - Factory reset to demo baseline
 
-## Scope
-- Create `src/vue/pages/ReviewPage.vue` (placeholder component).
-- Add `/review` route to `src/vue/router/index.ts`.
-- Add a unit test `src/vue/__tests__/review.test.ts`.
-- Verify type‑check, unit tests, and production build.
+## Quality Gate Verification
+- `npm run typecheck`: PASS (0 errors)
+- `npx vue-tsc --noEmit`: PASS (0 errors)
+- `npm run lint`: PASS (0 errors)
+- `npm run test`: PASS (10 test files, 93/93 tests passing)
+- `npm run test:coverage`: PASS
+- `npm run build`: PASS
+- `npm run quality:scan`: PASS
+- `npm run quality:gate`: PASS
+- `npm run quality`: PASS (Exit code: 0)
 
-## Out of Scope
-- Backend integration (no API calls).
-- Complex state management beyond a simple Pinia store.
-
-## Implementation Plan
-1. Add placeholder Vue component with basic template.
-2. Register route.
-3. Write a Vitest that mounts the component and asserts it renders.
-4. Run lint, test, build.
-
-## Testing Plan
-- `npm run lint`
-- `npm run test` (includes the new test file)
-- `npm run build`
-
-## Verification Gates
-All three commands must exit with code 0.
-
-## Documentation Updates
-- Append this file to `.ai/phases/phase-007.md`.
-- Record PASS in `.ai/CURRENT.md` after verification.
-
-## Commit Message
-`phase(007): migrate Review slice placeholder`
-
-## Success Criteria
-- No TypeScript errors.
-- Vitest passes.
-- Vite build succeeds.
-
-## Failure Conditions
-- Any command returns non‑zero.
-- Component fails to mount.
-
-## Next Phase
-Phase 008 – Backend scaffolding description.
-
+## Status
+COMPLETE. Ready for Phase 008.

@@ -20,6 +20,7 @@ import {
   AlertOctagon,
   Repeat,
   BarChart3,
+  Settings as SettingsIcon,
   type LucideProps,
 } from 'lucide-vue-next';
 
@@ -95,6 +96,12 @@ export const navSections: NavSection[] = [
       { label: 'Mistakes', to: '/review/mistakes', icon: AlertOctagon },
       { label: 'Flashcards', to: '/review/flashcards', icon: Repeat },
       { label: 'Progress', to: '/review/progress', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'CONFIGURATION',
+    items: [
+      { label: 'Settings & Backup', to: '/settings', icon: SettingsIcon },
     ],
   },
 ];

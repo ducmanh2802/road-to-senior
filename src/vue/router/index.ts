@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
-import AppShell from '../layouts/AppShell.vue';
 import PagePlaceholder from '../pages/PagePlaceholder.vue';
+import ReviewPage from '../pages/ReviewPage.vue';
 
 /**
  * Canonical route table — single source of truth.
@@ -26,8 +26,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/learning',
     name: 'learning',
-    component: PagePlaceholder,
-    meta: { section: 'LEARNING', title: 'Learning Path' },
+    redirect: '/learning/roadmap',
+  },
+  {
+    path: '/learning/roadmap',
+    name: 'learning-roadmap',
+    component: () => import('../pages/RoadmapPage.vue'),
+    meta: { section: 'LEARNING', title: '180-Day Roadmap' },
   },
   {
     path: '/learning/java',
@@ -128,7 +133,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/review',
     name: 'review',
-    component: PagePlaceholder,
+    component: ReviewPage,
     meta: { section: 'REVIEW', title: 'Review' },
   },
   {
@@ -148,6 +153,12 @@ export const routes: RouteRecordRaw[] = [
     name: 'review-progress',
     component: PagePlaceholder,
     meta: { section: 'REVIEW', title: 'Progress' },
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('../pages/SettingsPage.vue'),
+    meta: { section: 'SETTINGS', title: 'Settings & Local Storage' },
   },
   {
     path: '/:pathMatch(.*)*',

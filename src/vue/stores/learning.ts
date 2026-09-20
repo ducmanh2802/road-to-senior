@@ -2,14 +2,18 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
   LearningTask,
+  TaskState,
+  TaskCategory,
   RoadmapDay,
   KnowledgeTopic,
   ReviewCard,
+  ReviewGrade,
   DSAProblem,
   ProjectFeature,
   IncidentScenario,
   CompetencyReadiness,
 } from '../../types';
+import { calculateSm2Review } from '../../engines/sm2';
 import {
   INITIAL_ROADMAP_DAYS,
   INITIAL_TASKS,
@@ -235,6 +239,154 @@ export const useLearningStore = defineStore('learning', () => {
     };
   });
 
+  function setTaskState(taskId: string, state: TaskState): void {
+    tasks.value = tasks.value.map((t) => {
+      if (t.id === taskId) {
+        const isNowCompleted = state === 'COMPLETED';
+        return {
+          ...t,
+          state,
+          completedAt: isNowCompleted ? new Date().toISOString() : undefined,
+        };
+      }
+      return t;
+    });
+    saveToStorage();
+  }
+
+  function addTask(taskData: {
+    title: string;
+    description?: string;
+    category?: TaskCategory;
+    estimatedMinutes?: number;
+    state?: TaskState;
+    dayNumber?: number;
+    notes?: string;
+    codeSnippet?: string;
+    externalLink?: string;
+  }): LearningTask {
+    const newTask: LearningTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      dayNumber: taskData.dayNumber ?? currentDay.value,
+      title: taskData.title,
+      category: taskData.category ?? 'HANDS_ON',
+      description: taskData.description ?? '',
+      estimatedMinutes: taskData.estimatedMinutes ?? 30,
+      state: taskData.state ?? 'TODO',
+      notes: taskData.notes,
+      codeSnippet: taskData.codeSnippet,
+      externalLink: taskData.externalLink,
+    };
+    tasks.value = [newTask, ...tasks.value];
+    saveToStorage();
+    return newTask;
+  }
+
+  function updateTaskNotes(taskId: string, notes: string): void {
+    tasks.value = tasks.value.map((t) => (t.id === taskId ? { ...t, notes } : t));
+    saveToStorage();
+  }
+
+  function recordReviewAnswer(cardId: string, grade: ReviewGrade, durationSec: number): void {
+    reviewCards.value = reviewCards.value.map((card) => {
+      if (card.id !== cardId) return card;
+
+      const sm2Result = calculateSm2Review(card, grade);
+
+      return {
+        ...card,
+        ...sm2Result,
+        history: [
+          ...card.history,
+          {
+            date: sm2Result.lastReviewedAt,
+            grade,
+            durationSec,
+          },
+        ],
+      };
+    });
+    saveToStorage();
+  }
+
+  function createReviewCardFromMistake(
+    question: string,
+    expectedAnswer: string,
+    category: string,
+    codeExample?: string,
+    explanation?: string
+  ): ReviewCard {
+    const newCard: ReviewCard = {
+      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      question,
+      expectedAnswer,
+      category,
+      codeExample,
+      explanation,
+      intervalDays: 1,
+      repetitionCount: 0,
+      easeFactor: 2.5,
+      nextReviewAt: new Date().toISOString(),
+      history: [],
+    };
+    reviewCards.value = [newCard, ...reviewCards.value];
+    saveToStorage();
+    return newCard;
+  }
+
+  function setCurrentDay(day: number): void {
+    if (day >= 1 && day <= 180) {
+      currentDay.value = day;
+      saveToStorage();
+    }
+  }
+
+  function exportDataAsJson(): string {
+    const data = {
+      currentDay: currentDay.value,
+      streak: streak.value,
+      studyTimeMinutes: studyTimeMinutes.value,
+      tasks: tasks.value,
+      roadmapDays: roadmapDays.value,
+      knowledgeTopics: knowledgeTopics.value,
+      reviewCards: reviewCards.value,
+      dsaProblems: dsaProblems.value,
+      projectFeatures: projectFeatures.value,
+      incidents: incidents.value,
+      exportedAt: new Date().toISOString(),
+    };
+    return JSON.stringify(data, null, 2);
+  }
+
+  function importDataFromJson(jsonString: string): boolean {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (!parsed || typeof parsed !== 'object') {
+        return false;
+      }
+      if (typeof parsed.currentDay === 'number' && parsed.currentDay >= 1 && parsed.currentDay <= 180) {
+        currentDay.value = parsed.currentDay;
+      }
+      if (typeof parsed.streak === 'number') streak.value = parsed.streak;
+      if (typeof parsed.studyTimeMinutes === 'number') studyTimeMinutes.value = parsed.studyTimeMinutes;
+      if (Array.isArray(parsed.tasks)) tasks.value = parsed.tasks;
+      if (Array.isArray(parsed.roadmapDays)) roadmapDays.value = parsed.roadmapDays;
+      if (Array.isArray(parsed.knowledgeTopics)) knowledgeTopics.value = parsed.knowledgeTopics;
+      if (Array.isArray(parsed.reviewCards)) reviewCards.value = parsed.reviewCards;
+      if (Array.isArray(parsed.dsaProblems)) dsaProblems.value = parsed.dsaProblems;
+      if (Array.isArray(parsed.projectFeatures)) projectFeatures.value = parsed.projectFeatures;
+      if (Array.isArray(parsed.incidents)) incidents.value = parsed.incidents;
+
+      status.value = 'success';
+      errorMessage.value = null;
+      errorDetail.value = undefined;
+      saveToStorage();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     currentDay,
     streak,
@@ -252,6 +404,14 @@ export const useLearningStore = defineStore('learning', () => {
     loadFromStorage,
     resetToDemo,
     saveToStorage,
+    setCurrentDay,
+    exportDataAsJson,
+    importDataFromJson,
+    addTask,
+    setTaskState,
+    updateTaskNotes,
+    recordReviewAnswer,
+    createReviewCardFromMistake,
     daysRemaining,
     completedTasksCount,
     totalTasksCount,

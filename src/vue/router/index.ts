@@ -15,8 +15,14 @@ export const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'command-center',
     component: () => import('../pages/CommandCenterPage.vue'),
-    meta: { section: 'COMMAND CENTER', title: 'Command Center' },
-  },
+    },
+    {
+      path: '/today',
+      name: 'today',
+      component: () => import('../pages/TodayViewPage.vue'),
+      meta: { section: 'LEARNING', title: 'Today View' },
+    },
+
   {
     path: '/learning',
     name: 'learning',

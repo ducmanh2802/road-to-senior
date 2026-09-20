@@ -6,7 +6,7 @@ import { MobileNav } from './components/layout/MobileNav';
 import { ShortcutsModal } from './components/modals/ShortcutsModal';
 import { CommandPalette } from './components/modals/CommandPalette';
 
-import { TodayView } from './components/views/TodayView';
+// import { TodayView } from './components/views/TodayView'; // migrated to Vue
 import { RoadmapView } from './components/views/RoadmapView';
 import { KnowledgeView } from './components/views/KnowledgeView';
 import { ReviewView } from './components/views/ReviewView';
@@ -112,7 +112,7 @@ const MainAppContent: React.FC = () => {
           </div>
         );
       case 'today':
-        return <TodayView onNavigate={setCurrentView} />;
+        // return <TodayView onNavigate={setCurrentView} />; // migrated to Vue
       case 'roadmap':
         return <RoadmapView onNavigate={setCurrentView} />;
       case 'knowledge':

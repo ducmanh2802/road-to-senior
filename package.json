@@ -11,7 +11,18 @@
     "lint": "tsc --noEmit",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "phase-001": "echo \"Phase 001 already completed\"",
+    "phase-002": "echo \"Phase 002 already completed\"",
+    "phase-003": "echo \"Phase 003 already completed\"",
+    "phase-004": "echo \"Phase 004 already completed\"",
+    "phase-005": "node scripts/runPhase.js 005",
+    "phase-006": "echo \"Phase 006 is planning only\"",
+    "phase-007": "node scripts/runPhase.js 007",
+    "phase-008": "cd backend && ./gradlew build",
+    "phase-009": "npm run test:e2e",
+    "phase-010": "npm run build && npm run lint",
+    "phase-011": "npm run docker:build && npm run ci:deploy"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -6,7 +6,7 @@ Current frontend: Vue 3 (hard-cutover foundation, entry = src/vue/main.ts);
   React source retained as migration reference only
 Target frontend: Vue 3 + TypeScript + Vue Router + Pinia
 Backend: none (target: Java 25 / Spring Boot 4.1.x — NOT started)
-Current phase: Phase 007 completed — Settings & State Backup Slice
+Current phase: Phase 009 completed — CodeBlock + Java 25 / Spring Boot 4.1
 Completed phases:
   - Phase 001 (f74fed7) — platform baseline: governance v1, 2 TS fixes, ADRs 1-3
   - Phase 002 (ea95274) — Vue shell: AppShell/Sidebar/TopBar, 22 routes,
@@ -28,20 +28,26 @@ Completed phases:
   - Phase 007 — Settings & State Backup Slice: SettingsPage.vue (/settings),
     Pinia store actions (setCurrentDay, exportDataAsJson, importDataFromJson, resetToDemo),
     settings test suite (6/6 PASS, 93/93 full suite), React slice retired
+  - Phase 008 — 180-Day Roadmap Explorer Slice: RoadmapPage.vue (/learning/roadmap),
+    curriculum phase filter (P1–P6), search filter, active day specification drawer,
+    workspace day switching, roadmap test suite (7/7 PASS, 100/100 full suite), React slice retired
+  - Phase 009 — CodeBlock + Java 25 / Spring Boot 4.1: CodeBlock.vue, canonicalStandards.ts,
+    LearningJavaPage.vue 6-stage engineering loop, codeBlock and learningJava test suites
+    (20 new tests, 120/120 full suite PASS), quality pipeline PASS
 Active work: none
 
-## Phase 007 Quality Gate Status
-- Phase: Phase 007 — Settings & State Backup Slice
+## Phase 009 Quality Gate Status
+- Phase: Phase 009 — CodeBlock + Java 25 / Spring Boot 4.1
 - Status: PASS
 - Free Autonomous Quality Gate:
   - TypeScript (tsc --noEmit): PASS (0 errors)
   - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
   - ESLint 9 (eslint .): PASS (0 errors)
-  - Vitest (vitest run): PASS (10 test files, 93/93 tests passing)
+  - Vitest (vitest run): PASS (13 test files, 120/120 tests passing)
   - Gitleaks (gitleaks detect): PASS (0 leaks found)
-  - Coverage: COLLECTED
+  - Coverage: COLLECTED (>93% CodeBlock.vue, 100% LearningJavaPage.vue, >84% overall)
   - Vite Build (vite build): PASS
-- Next phase: Phase 008 — 180-Day Roadmap Explorer Slice (NOT STARTED)
+- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED)
 
 ## Protected Areas
 

@@ -9,8 +9,8 @@ Phase 005 — Review Page Vertical Slice         DONE
 Phase 006 — Migration Batch Planning           DONE
 Phase 006.1 — SonarQube & Quality Gate         DONE
 Phase 007 — Settings & State Backup Slice      DONE
-Phase 008 — 180-Day Roadmap Explorer Slice     READY
-Phase 009 — CodeBlock & Core Curriculum Tracks PLANNED
+Phase 008 — 180-Day Roadmap Explorer Slice     DONE
+Phase 009 — CodeBlock & Core Curriculum Tracks DONE
 Phase 010 — Microservices & Claude Code Labs   PLANNED
 Phase 011 — Analytics & Readiness Slice        PLANNED
 Phase 012 — DSA Pattern Practice Slice         PLANNED

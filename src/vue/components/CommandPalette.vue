@@ -15,13 +15,17 @@ interface Command {
 /** Only routes that actually exist in the canonical route table. */
 const commands: Command[] = [
   { label: 'Go to Command Center', to: '/', section: 'Navigation' },
+  { label: 'Go to Roadmap', to: '/learning/roadmap', section: 'Learning' },
   { label: 'Go to Learning Path', to: '/learning', section: 'Navigation' },
   { label: 'Go to Java 25', to: '/learning/java', section: 'Learning' },
+  { label: 'Go to AI Knowledge', to: '/learning/ai', section: 'Learning' },
+  { label: 'Go to Technical English', to: '/english', section: 'Learning' },
   { label: 'Go to Spring Boot', to: '/learning/spring', section: 'Learning' },
   { label: 'Go to Architecture', to: '/architecture', section: 'Navigation' },
   { label: 'Go to AWS AIF-C01', to: '/certifications/aws/aif-c01', section: 'Certifications' },
   { label: 'Go to Interview', to: '/interview', section: 'Navigation' },
   { label: 'Go to Mistakes', to: '/review/mistakes', section: 'Review' },
+  { label: 'Go to Settings', to: '/settings', section: 'Configuration' },
 ];
 
 const query = ref('');
@@ -41,9 +45,8 @@ function move(delta: number): void {
   if (filtered.value.length === 0) return;
   activeIndex.value = (activeIndex.value + delta + filtered.value.length) % filtered.value.length;
   nextTick(() => {
-    const target = listRef.value
-      ?.querySelectorAll('[data-command]')
-      [activeIndex.value];
+    const items = listRef.value?.querySelectorAll('[data-command]');
+    const target = items ? items[activeIndex.value] : undefined;
     // jsdom (and some embedded browsers) do not implement scrollIntoView
     if (typeof target?.scrollIntoView === 'function') {
       target.scrollIntoView({ block: 'nearest' });

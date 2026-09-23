@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AlertOctagon } from 'lucide-vue-next';
 
-const props = defineProps<{
+defineProps<{
   /** User-facing summary of what happened (no stack traces). */
   message: string;
   /** Optional technical detail, kept out of the main message. */

@@ -1,6 +1,8 @@
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   LayoutDashboard,
+  Bot,
+  Languages,
   Map,
   Coffee,
   Leaf,
@@ -20,6 +22,7 @@ import {
   AlertOctagon,
   Repeat,
   BarChart3,
+  Settings as SettingsIcon,
   type LucideProps,
 } from 'lucide-vue-next';
 
@@ -47,12 +50,14 @@ export const navSections: NavSection[] = [
     items: [
       { label: 'Learning Path', to: '/learning', icon: Map },
       { label: 'Java 25', to: '/learning/java', icon: Coffee, child: true },
+      { label: 'AI Knowledge', to: '/learning/ai', icon: Bot, child: true },
       { label: 'Spring Boot', to: '/learning/spring', icon: Leaf, child: true },
       { label: 'Microservices', to: '/learning/microservices', icon: Layers, child: true },
       { label: 'Kafka', to: '/learning/kafka', icon: MessageSquare, child: true },
       { label: 'Redis', to: '/learning/redis', icon: Database, child: true },
       { label: 'Databases', to: '/learning/databases', icon: Database, child: true },
       { label: 'System Design', to: '/learning/system-design', icon: Cpu, child: true },
+      { label: 'Technical English', to: '/english', icon: Languages, child: true },
     ],
   },
   {
@@ -95,6 +100,12 @@ export const navSections: NavSection[] = [
       { label: 'Mistakes', to: '/review/mistakes', icon: AlertOctagon },
       { label: 'Flashcards', to: '/review/flashcards', icon: Repeat },
       { label: 'Progress', to: '/review/progress', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'CONFIGURATION',
+    items: [
+      { label: 'Settings & Backup', to: '/settings', icon: SettingsIcon },
     ],
   },
 ];

@@ -1,17 +1,25 @@
+import { AI_SENIOR_JAVA_ITEMS } from '../../data/aiSeniorJava';
+import { TECHNICAL_ENGLISH_ITEMS } from '../../data/technicalEnglish';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
   LearningTask,
   TaskState,
+<<<<<<< HEAD
+=======
+  TaskCategory,
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
   RoadmapDay,
   KnowledgeTopic,
   ReviewCard,
+  ReviewGrade,
   DSAProblem,
   ProjectFeature,
   IncidentScenario,
   InterviewQuestion,
   CompetencyReadiness,
 } from '../../types';
+import { calculateSm2Review } from '../../engines/sm2';
 import {
   INITIAL_ROADMAP_DAYS,
   INITIAL_TASKS,
@@ -48,7 +56,18 @@ export const useLearningStore = defineStore('learning', () => {
   const dsaProblems = ref<DSAProblem[]>([]);
   const projectFeatures = ref<ProjectFeature[]>([]);
   const incidents = ref<IncidentScenario[]>([]);
+<<<<<<< HEAD
   const interviewQuestions = ref<InterviewQuestion[]>([...INITIAL_INTERVIEW_QUESTIONS]);
+=======
+  const completedAiTopicIds = ref<string[]>([]);
+  const completedEnglishItemIds = ref<string[]>([]);
+  // P0 Java Core Tracking: completed module IDs (only when assessment >= 80% and failure lab completed)
+  const completedJavaModuleIds = ref<string[]>([]);
+  // Record completed stages per module (e.g., '1.1': ['learn', 'build', 'break', 'observe', 'debug', 'fix', 'benchmark', 'design', 'explain', 'defend', 'assess'])
+  const javaModuleStageProgress = ref<Record<string, string[]>>({});
+  // Module assessment scores
+  const javaModuleAssessmentScores = ref<Record<string, number>>({});
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
 
   const status = ref<'loading' | 'error' | 'empty' | 'success'>('loading');
   const errorMessage = ref<string | null>(null);
@@ -67,7 +86,15 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems: dsaProblems.value,
         projectFeatures: projectFeatures.value,
         incidents: incidents.value,
+<<<<<<< HEAD
         interviewQuestions: interviewQuestions.value,
+=======
+        completedAiTopicIds: completedAiTopicIds.value,
+        completedEnglishItemIds: completedEnglishItemIds.value,
+        completedJavaModuleIds: completedJavaModuleIds.value,
+        javaModuleStageProgress: javaModuleStageProgress.value,
+        javaModuleAssessmentScores: javaModuleAssessmentScores.value,
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -86,7 +113,15 @@ export const useLearningStore = defineStore('learning', () => {
     dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
     projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
     incidents.value = [...INITIAL_INCIDENTS];
+<<<<<<< HEAD
     interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
+=======
+    completedAiTopicIds.value = [];
+    completedEnglishItemIds.value = [];
+    completedJavaModuleIds.value = [];
+    javaModuleStageProgress.value = {};
+    javaModuleAssessmentScores.value = {};
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
@@ -112,9 +147,17 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = Array.isArray(parsed.dsaProblems) ? parsed.dsaProblems : [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = Array.isArray(parsed.projectFeatures) ? parsed.projectFeatures : [...INITIAL_PROJECT_FEATURES];
         incidents.value = Array.isArray(parsed.incidents) ? parsed.incidents : [...INITIAL_INCIDENTS];
+<<<<<<< HEAD
         interviewQuestions.value = Array.isArray(parsed.interviewQuestions)
           ? parsed.interviewQuestions
           : [...INITIAL_INTERVIEW_QUESTIONS];
+=======
+        completedAiTopicIds.value = Array.isArray(parsed.completedAiTopicIds) ? parsed.completedAiTopicIds : [];
+        completedEnglishItemIds.value = Array.isArray(parsed.completedEnglishItemIds) ? parsed.completedEnglishItemIds : [];
+        completedJavaModuleIds.value = Array.isArray(parsed.completedJavaModuleIds) ? parsed.completedJavaModuleIds : [];
+        javaModuleStageProgress.value = (parsed.javaModuleStageProgress && typeof parsed.javaModuleStageProgress === 'object') ? parsed.javaModuleStageProgress : {};
+        javaModuleAssessmentScores.value = (parsed.javaModuleAssessmentScores && typeof parsed.javaModuleAssessmentScores === 'object') ? parsed.javaModuleAssessmentScores : {};
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -127,7 +170,15 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
         incidents.value = [...INITIAL_INCIDENTS];
+<<<<<<< HEAD
         interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
+=======
+        completedAiTopicIds.value = [];
+        completedEnglishItemIds.value = [];
+        completedJavaModuleIds.value = [];
+        javaModuleStageProgress.value = {};
+        javaModuleAssessmentScores.value = {};
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
         saveToStorage();
       }
 
@@ -330,8 +381,269 @@ export const useLearningStore = defineStore('learning', () => {
     };
   });
 
+  function setTaskState(taskId: string, state: TaskState): void {
+    tasks.value = tasks.value.map((t) => {
+      if (t.id === taskId) {
+        const isNowCompleted = state === 'COMPLETED';
+        return {
+          ...t,
+          state,
+          completedAt: isNowCompleted ? new Date().toISOString() : undefined,
+        };
+      }
+      return t;
+    });
+    saveToStorage();
+  }
+
+  function addTask(taskData: {
+    title: string;
+    description?: string;
+    category?: TaskCategory;
+    estimatedMinutes?: number;
+    state?: TaskState;
+    dayNumber?: number;
+    notes?: string;
+    codeSnippet?: string;
+    externalLink?: string;
+  }): LearningTask {
+    const newTask: LearningTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      dayNumber: taskData.dayNumber ?? currentDay.value,
+      title: taskData.title,
+      category: taskData.category ?? 'HANDS_ON',
+      description: taskData.description ?? '',
+      estimatedMinutes: taskData.estimatedMinutes ?? 30,
+      state: taskData.state ?? 'TODO',
+      notes: taskData.notes,
+      codeSnippet: taskData.codeSnippet,
+      externalLink: taskData.externalLink,
+    };
+    tasks.value = [newTask, ...tasks.value];
+    saveToStorage();
+    return newTask;
+  }
+
+  function updateTaskNotes(taskId: string, notes: string): void {
+    tasks.value = tasks.value.map((t) => (t.id === taskId ? { ...t, notes } : t));
+    saveToStorage();
+  }
+
+  function recordReviewAnswer(cardId: string, grade: ReviewGrade, durationSec: number): void {
+    reviewCards.value = reviewCards.value.map((card) => {
+      if (card.id !== cardId) return card;
+
+      const sm2Result = calculateSm2Review(card, grade);
+
+      return {
+        ...card,
+        ...sm2Result,
+        history: [
+          ...card.history,
+          {
+            date: sm2Result.lastReviewedAt,
+            grade,
+            durationSec,
+          },
+        ],
+      };
+    });
+    saveToStorage();
+  }
+
+  function createReviewCardFromMistake(
+    question: string,
+    expectedAnswer: string,
+    category: string,
+    codeExample?: string,
+    explanation?: string
+  ): ReviewCard {
+    const newCard: ReviewCard = {
+      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      question,
+      expectedAnswer,
+      category,
+      codeExample,
+      explanation,
+      intervalDays: 1,
+      repetitionCount: 0,
+      easeFactor: 2.5,
+      nextReviewAt: new Date().toISOString(),
+      history: [],
+    };
+    reviewCards.value = [newCard, ...reviewCards.value];
+    saveToStorage();
+    return newCard;
+  }
+
+  function setCurrentDay(day: number): void {
+    if (day >= 1 && day <= 180) {
+      currentDay.value = day;
+      saveToStorage();
+    }
+  }
+
+  function exportDataAsJson(): string {
+    const data = {
+      currentDay: currentDay.value,
+      streak: streak.value,
+      studyTimeMinutes: studyTimeMinutes.value,
+      tasks: tasks.value,
+      roadmapDays: roadmapDays.value,
+      knowledgeTopics: knowledgeTopics.value,
+      reviewCards: reviewCards.value,
+      dsaProblems: dsaProblems.value,
+      projectFeatures: projectFeatures.value,
+      incidents: incidents.value,
+      completedAiTopicIds: completedAiTopicIds.value,
+      completedEnglishItemIds: completedEnglishItemIds.value,
+      exportedAt: new Date().toISOString(),
+    };
+    return JSON.stringify(data, null, 2);
+  }
+
+  function importDataFromJson(jsonString: string): boolean {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (!parsed || typeof parsed !== 'object') {
+        return false;
+      }
+      if (typeof parsed.currentDay === 'number' && parsed.currentDay >= 1 && parsed.currentDay <= 180) {
+        currentDay.value = parsed.currentDay;
+      }
+      if (typeof parsed.streak === 'number') streak.value = parsed.streak;
+      if (typeof parsed.studyTimeMinutes === 'number') studyTimeMinutes.value = parsed.studyTimeMinutes;
+      if (Array.isArray(parsed.tasks)) tasks.value = parsed.tasks;
+      if (Array.isArray(parsed.roadmapDays)) roadmapDays.value = parsed.roadmapDays;
+      if (Array.isArray(parsed.knowledgeTopics)) knowledgeTopics.value = parsed.knowledgeTopics;
+      if (Array.isArray(parsed.reviewCards)) reviewCards.value = parsed.reviewCards;
+      if (Array.isArray(parsed.dsaProblems)) dsaProblems.value = parsed.dsaProblems;
+      if (Array.isArray(parsed.projectFeatures)) projectFeatures.value = parsed.projectFeatures;
+      if (Array.isArray(parsed.incidents)) incidents.value = parsed.incidents;
+      if (Array.isArray(parsed.completedAiTopicIds)) completedAiTopicIds.value = parsed.completedAiTopicIds;
+      if (Array.isArray(parsed.completedEnglishItemIds)) completedEnglishItemIds.value = parsed.completedEnglishItemIds;
+
+      status.value = 'success';
+      errorMessage.value = null;
+      errorDetail.value = undefined;
+      saveToStorage();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  const aiCompletedCount = computed(() => completedAiTopicIds.value.length);
+  const aiTotalCount = computed(() => AI_SENIOR_JAVA_ITEMS.length);
+  const aiProgressPercent = computed(() => {
+    if (aiTotalCount.value === 0) return 0;
+    return Math.round((aiCompletedCount.value / aiTotalCount.value) * 100);
+  });
+
+  function isAiTopicCompleted(topicId: string): boolean {
+    return completedAiTopicIds.value.includes(topicId);
+  }
+
+  function toggleAiTopicCompletion(topicId: string): void {
+    if (completedAiTopicIds.value.includes(topicId)) {
+      completedAiTopicIds.value = completedAiTopicIds.value.filter((id) => id !== topicId);
+    } else {
+      completedAiTopicIds.value = [...completedAiTopicIds.value, topicId];
+    }
+    saveToStorage();
+  }
+
+  const englishCompletedCount = computed(() => completedEnglishItemIds.value.length);
+  const englishTotalCount = computed(() => TECHNICAL_ENGLISH_ITEMS.length);
+  const englishProgressPercent = computed(() => {
+    if (englishTotalCount.value === 0) return 0;
+    return Math.round((englishCompletedCount.value / englishTotalCount.value) * 100);
+  });
+
+  function isEnglishItemCompleted(itemId: string): boolean {
+    return completedEnglishItemIds.value.includes(itemId);
+  }
+
+  function toggleEnglishItemCompletion(itemId: string): void {
+    if (completedEnglishItemIds.value.includes(itemId)) {
+      completedEnglishItemIds.value = completedEnglishItemIds.value.filter((id) => id !== itemId);
+    } else {
+      completedEnglishItemIds.value = [...completedEnglishItemIds.value, itemId];
+    }
+    saveToStorage();
+  }
+
+  // --- P0 Java Core Progress Logic ---
+  const javaCompletedCount = computed(() => completedJavaModuleIds.value.length);
+  const javaTotalCount = computed(() => 20); // 7 Language + 6 JVM + 7 Concurrency
+  const javaProgressPercent = computed(() => {
+    return Math.round((javaCompletedCount.value / javaTotalCount.value) * 100);
+  });
+
+  function isJavaModuleCompleted(moduleId: string): boolean {
+    return completedJavaModuleIds.value.includes(moduleId);
+  }
+
+  function getModuleStagesCompleted(moduleId: string): string[] {
+    return javaModuleStageProgress.value[moduleId] || [];
+  }
+
+  function recordJavaModuleStage(moduleId: string, stage: string): void {
+    const existing = javaModuleStageProgress.value[moduleId] || [];
+    if (!existing.includes(stage)) {
+      javaModuleStageProgress.value = {
+        ...javaModuleStageProgress.value,
+        [moduleId]: [...existing, stage],
+      };
+      saveToStorage();
+    }
+  }
+
+  function recordJavaAssessmentScore(moduleId: string, scorePercent: number, failureLabPassed: boolean): boolean {
+    javaModuleAssessmentScores.value = {
+      ...javaModuleAssessmentScores.value,
+      [moduleId]: scorePercent,
+    };
+
+    // Strict completion standard: >= 80% AND mandatory failure-lab completion
+    const stages = javaModuleStageProgress.value[moduleId] || [];
+    const hasPassedBreakLab = stages.includes('break') || failureLabPassed;
+
+    if (scorePercent >= 80 && hasPassedBreakLab) {
+      if (!completedJavaModuleIds.value.includes(moduleId)) {
+        completedJavaModuleIds.value = [...completedJavaModuleIds.value, moduleId];
+      }
+      saveToStorage();
+      return true;
+    }
+    saveToStorage();
+    return false;
+  }
+
   return {
     currentDay,
+    completedAiTopicIds,
+    aiCompletedCount,
+    aiTotalCount,
+    aiProgressPercent,
+    isAiTopicCompleted,
+    toggleAiTopicCompletion,
+    completedEnglishItemIds,
+    englishCompletedCount,
+    englishTotalCount,
+    englishProgressPercent,
+    isEnglishItemCompleted,
+    toggleEnglishItemCompletion,
+    completedJavaModuleIds,
+    javaModuleStageProgress,
+    javaModuleAssessmentScores,
+    javaCompletedCount,
+    javaTotalCount,
+    javaProgressPercent,
+    isJavaModuleCompleted,
+    getModuleStagesCompleted,
+    recordJavaModuleStage,
+    recordJavaAssessmentScore,
     streak,
     studyTimeMinutes,
     tasks,
@@ -348,6 +660,12 @@ export const useLearningStore = defineStore('learning', () => {
     loadFromStorage,
     resetToDemo,
     saveToStorage,
+<<<<<<< HEAD
+=======
+    setCurrentDay,
+    exportDataAsJson,
+    importDataFromJson,
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     addTask,
     setTaskState,
     updateTaskNotes,

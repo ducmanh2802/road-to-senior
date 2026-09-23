@@ -8,7 +8,7 @@ export interface TrendConfig {
   label?: string;
 }
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     label: string;
     value: string | number;

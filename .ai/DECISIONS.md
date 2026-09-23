@@ -54,3 +54,21 @@ Decision: Track `package-lock.json`; remove stale `bun.lock` (cannot be regenera
 bun is not installed in this environment).
 Reason: dependency tree must have one authoritative lockfile matching the installed toolchain.
 Alternatives: keep both (drift risk). Impact: npm is the canonical package manager.
+
+## ADR-006 — English Learning Track Architecture & Integration
+
+Date: 2026-09-19
+Status: Accepted (Planning & Architecture Integration)
+Decision: Integrate English as a first-class learning track with three interconnected pillars:
+TOEIC (practice/examination), Practical Workplace Communication, and Technical English for Software Engineering.
+Key architectural principles:
+1. Reuses the existing SM-2 spaced repetition engine (`src/engines/sm2.ts`) and `ReviewCard` structure for vocabulary, grammar, and technical terms; no redundant review engine.
+2. Extends `LearningTask` (`category: 'ENGLISH'`) and `EnglishSession` rather than introducing isolated schemas.
+3. Fully integrated into the existing 10-stage engineering loop (LEARN → ... → EXPLAIN → DEFEND → REVIEW → INTERVIEW), specifically driving the EXPLAIN, DEFEND, and INTERVIEW stages.
+4. Distinguishes practice scores and estimated performance from official certified test scores. No proprietary exam questions (original practice content only).
+5. Reuses the established Vue 3 Design System (AppShell, dark palette, PageHeader, StatCard, ProgressBar, EmptyState, ErrorState, LoadingSkeleton).
+6. No audio/speech AI dependencies without an approved provider; text scenario prompts, transcripts, and explicit evaluation rubrics are used.
+Reason: Position Senior Java 180 as a comprehensive engineering career OS where English is an integrated engineering competency, not a generic vocabulary app.
+Alternatives: Standalone English app, third-party iframe embed, generic flashcard widget.
+Trade-offs: Richer data models and cross-linking to Java/AWS concepts vs. isolated learning silos.
+Impact: Seamless integration with Command Center, Review, and Interview modules.

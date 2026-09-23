@@ -6,7 +6,8 @@
   (exam planned end of September 2026).
 - **Major capabilities:** learning roadmap (180-day), spaced repetition (SM-2), knowledge
   mastery tracking, DSA practice, system design labs, incident labs, interview drills,
-  analytics; planned: AWS AIF-C01 certification layer + solution architecture labs.
+  analytics; planned: AWS AIF-C01 certification layer, solution architecture labs, and
+  integrated English Learning Track (TOEIC + Workplace Communication + Technical English).
 - **Architecture (current):** client-side single-page app. No backend at runtime.
   UI layer in `src/components` (views / ui / layout / modals), state in
   `src/context/LearningContext.tsx`, deterministic engines in `src/engines`

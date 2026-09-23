@@ -1,15 +1,15 @@
-import { 
-  RoadmapDay, 
-  LearningTask, 
-  KnowledgeTopic, 
-  ReviewCard, 
-  DSAProblem, 
-  SystemDesignProblem, 
-  ClaudeCodeExercise, 
-  EnglishSession, 
-  ProjectFeature, 
-  IncidentScenario, 
-  InterviewQuestion 
+import {
+  RoadmapDay,
+  LearningTask,
+  KnowledgeTopic,
+  ReviewCard,
+  DSAProblem,
+  SystemDesignProblem,
+  ClaudeCodeExercise,
+  EnglishSession,
+  ProjectFeature,
+  IncidentScenario,
+  InterviewQuestion
 } from '../types';
 
 export const INITIAL_ROADMAP_DAYS: RoadmapDay[] = [
@@ -368,12 +368,12 @@ export const INITIAL_TASKS: LearningTask[] = [
     codeSnippet: `@Service
 public class OrderCheckoutService {
   private final ExecutorService orderPool;
-  
+
   public CompletableFuture<CheckoutSummary> processCheckout(CheckoutRequest req) {
     var invFuture = CompletableFuture.supplyAsync(() -> inventoryClient.reserve(req), orderPool);
     var payFuture = CompletableFuture.supplyAsync(() -> paymentClient.preAuth(req), orderPool);
     var couponFuture = CompletableFuture.supplyAsync(() -> couponClient.apply(req), orderPool);
-    
+
     return CompletableFuture.allOf(invFuture, payFuture, couponFuture)
       .thenApply(v -> new CheckoutSummary(invFuture.join(), payFuture.join(), couponFuture.join()))
       .orTimeout(200, TimeUnit.MILLISECONDS);
@@ -711,21 +711,21 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
     int n = nums.length;
     int[] result = new int[n - k + 1];
     Deque<Integer> deque = new ArrayDeque<>(); // stores indices
-    
+
     for (int i = 0; i < n; i++) {
         // 1. Remove elements outside current window [i - k + 1, i]
         while (!deque.isEmpty() && deque.peekFirst() < i - k + 1) {
             deque.pollFirst();
         }
-        
+
         // 2. Maintain monotonic decreasing order (remove smaller elements from back)
         while (!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {
             deque.pollLast();
         }
-        
+
         // 3. Add current element index
         deque.offerLast(i);
-        
+
         // 4. Record maximum when first window is formed
         if (i >= k - 1) {
             result[i - k + 1] = nums[deque.peekFirst()];
@@ -754,7 +754,7 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
     int left = 0, right = height.length - 1;
     int maxLeft = 0, maxRight = 0;
     int totalWater = 0;
-    
+
     while (left < right) {
         if (height[left] <= height[right]) {
             if (height[left] >= maxLeft) {
@@ -795,11 +795,11 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
         Node prev, next;
         Node(int k, int v) { this.key = k; this.val = v; }
     }
-    
+
     private final int capacity;
     private final Map<Integer, Node> map;
     private final Node head, tail;
-    
+
     public LRUCache(int capacity) {
         this.capacity = capacity;
         this.map = new HashMap<>();
@@ -808,7 +808,7 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
         head.next = tail;
         tail.prev = head;
     }
-    
+
     public int get(int key) {
         if (!map.containsKey(key)) return -1;
         Node node = map.get(key);
@@ -816,7 +816,7 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
         insertToFront(node);
         return node.val;
     }
-    
+
     public void put(int key, int value) {
         if (map.containsKey(key)) {
             remove(map.get(key));
@@ -830,12 +830,12 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
         insertToFront(newNode);
         map.put(key, newNode);
     }
-    
+
     private void remove(Node node) {
         node.prev.next = node.next;
         node.next.prev = node.prev;
     }
-    
+
     private void insertToFront(Node node) {
         node.next = head.next;
         node.prev = head;
@@ -862,18 +862,18 @@ export const INITIAL_DSA_PROBLEMS: DSAProblem[] = [
     int[] inDegree = new int[numCourses];
     List<List<Integer>> adj = new ArrayList<>();
     for (int i = 0; i < numCourses; i++) adj.add(new ArrayList<>());
-    
+
     for (int[] pre : prerequisites) {
         int dest = pre[0], src = pre[1];
         adj.get(src).add(dest);
         inDegree[dest]++;
     }
-    
+
     Queue<Integer> queue = new ArrayDeque<>();
     for (int i = 0; i < numCourses; i++) {
         if (inDegree[i] == 0) queue.offer(i);
     }
-    
+
     int visited = 0;
     while (!queue.isEmpty()) {
         int curr = queue.poll();

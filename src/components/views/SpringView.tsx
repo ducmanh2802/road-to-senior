@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Leaf, 
-  Code2, 
-  Bug, 
-  AlertTriangle, 
-  Award, 
-  Layers, 
-  Terminal, 
-  ShieldCheck, 
+import {
+  Leaf,
+  Code2,
+  Bug,
+  AlertTriangle,
+  Award,
+  Layers,
+  Terminal,
+  ShieldCheck,
   Activity,
   CheckCircle2,
   Box
@@ -157,8 +157,8 @@ spring:
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex-1 min-w-[150px] flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-mono text-xs transition-colors ${
-                  isActive 
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm' 
+                  isActive
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                     : 'text-text-muted hover:text-text-primary hover:bg-surface-hover'
                 }`}
               >

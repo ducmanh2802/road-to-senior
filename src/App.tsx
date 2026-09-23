@@ -7,9 +7,9 @@ import { ShortcutsModal } from './components/modals/ShortcutsModal';
 import { CommandPalette } from './components/modals/CommandPalette';
 
 // import { TodayView } from './components/views/TodayView'; // migrated to Vue
-import { RoadmapView } from './components/views/RoadmapView';
+// import { RoadmapView } from './components/views/RoadmapView'; // migrated to Vue
 import { KnowledgeView } from './components/views/KnowledgeView';
-import { ReviewView } from './components/views/ReviewView';
+// import { ReviewView } from './components/views/ReviewView'; // migrated to Vue
 import { DsaView } from './components/views/DsaView';
 import { JavaView } from './components/views/JavaView';
 import { SpringView } from './components/views/SpringView';
@@ -112,13 +112,25 @@ const MainAppContent: React.FC = () => {
           </div>
         );
       case 'today':
-        // return <TodayView onNavigate={setCurrentView} />; // migrated to Vue
+        return (
+          <div className="p-8 text-center text-sm text-[#94A3B8] border border-dashed border-[#1E293B] rounded-lg">
+            Today View slice retired — migrated to Vue at /today
+          </div>
+        );
       case 'roadmap':
-        return <RoadmapView onNavigate={setCurrentView} />;
+        return (
+          <div className="p-8 text-center text-sm text-[#94A3B8] border border-dashed border-[#1E293B] rounded-lg">
+            Roadmap slice retired — migrated to Vue at /learning/roadmap
+          </div>
+        );
       case 'knowledge':
         return <KnowledgeView />;
       case 'review':
-        return <ReviewView />;
+        return (
+          <div className="p-8 text-center text-sm text-[#94A3B8] border border-dashed border-[#1E293B] rounded-lg">
+            Review View slice retired — migrated to Vue at /review
+          </div>
+        );
       case 'dsa':
         return <DsaView />;
       case 'java':

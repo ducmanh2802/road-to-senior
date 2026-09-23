@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
-import AppShell from '../layouts/AppShell.vue';
 import PagePlaceholder from '../pages/PagePlaceholder.vue';
+import ReviewPage from '../pages/ReviewPage.vue';
 
 /**
  * Canonical route table — single source of truth.
@@ -26,14 +26,25 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/learning',
     name: 'learning',
-    component: PagePlaceholder,
-    meta: { section: 'LEARNING', title: 'Learning Path' },
+    redirect: '/learning/roadmap',
+  },
+  {
+    path: '/learning/roadmap',
+    name: 'learning-roadmap',
+    component: () => import('../pages/RoadmapPage.vue'),
+    meta: { section: 'LEARNING', title: '180-Day Roadmap' },
   },
   {
     path: '/learning/java',
     name: 'learning-java',
     component: () => import('../pages/LearningJavaPage.vue'),
     meta: { section: 'LEARNING', title: 'Java 25' },
+  },
+  {
+    path: '/learning/ai',
+    name: 'learning-ai',
+    component: () => import('../pages/AIKnowledgePage.vue'),
+    meta: { section: 'LEARNING', title: 'AI Knowledge' },
   },
   {
     path: '/learning/spring',
@@ -128,7 +139,11 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/review',
     name: 'review',
+<<<<<<< HEAD
     component: () => import('../pages/ReviewPage.vue'),
+=======
+    component: ReviewPage,
+>>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     meta: { section: 'REVIEW', title: 'Review' },
   },
   {
@@ -148,6 +163,18 @@ export const routes: RouteRecordRaw[] = [
     name: 'review-progress',
     component: PagePlaceholder,
     meta: { section: 'REVIEW', title: 'Progress' },
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('../pages/SettingsPage.vue'),
+    meta: { section: 'SETTINGS', title: 'Settings & Local Storage' },
+  },
+  {
+    path: '/english',
+    name: 'english',
+    component: () => import('../pages/EnglishPage.vue'),
+    meta: { section: 'LEARNING', title: 'Technical English' },
   },
   {
     path: '/:pathMatch(.*)*',

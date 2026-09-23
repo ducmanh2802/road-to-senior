@@ -1,6 +1,6 @@
 export type TaskState = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED' | 'OVERDUE';
 
-export type TaskCategory = 
+export type TaskCategory =
   | 'JAVA'
   | 'HANDS_ON'
   | 'DSA'
@@ -25,7 +25,7 @@ export interface LearningTask {
   externalLink?: string;
 }
 
-export type KnowledgeStatus = 
+export type KnowledgeStatus =
   | 'NOT_STARTED'
   | 'LEARNING'
   | 'PRACTICING'
@@ -95,25 +95,25 @@ export interface ReviewCard {
 export interface DSAProblem {
   id: string;
   title: string;
-  pattern: 
-    | 'Arrays' 
-    | 'Strings' 
-    | 'HashMap' 
-    | 'Two Pointers' 
-    | 'Sliding Window' 
-    | 'Binary Search' 
-    | 'Stack' 
-    | 'Queue' 
-    | 'Linked List' 
-    | 'Tree' 
-    | 'BST' 
-    | 'Heap' 
-    | 'Graph' 
-    | 'BFS' 
-    | 'DFS' 
-    | 'Trie' 
-    | 'Dynamic Programming' 
-    | 'Greedy' 
+  pattern:
+    | 'Arrays'
+    | 'Strings'
+    | 'HashMap'
+    | 'Two Pointers'
+    | 'Sliding Window'
+    | 'Binary Search'
+    | 'Stack'
+    | 'Queue'
+    | 'Linked List'
+    | 'Tree'
+    | 'BST'
+    | 'Heap'
+    | 'Graph'
+    | 'BFS'
+    | 'DFS'
+    | 'Trie'
+    | 'Dynamic Programming'
+    | 'Greedy'
     | 'Backtracking'
     | 'Union Find';
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
@@ -170,16 +170,16 @@ export interface SystemDesignProblem {
 export interface ClaudeCodeExercise {
   id: string;
   title: string;
-  topic: 
-    | 'CLI & Config' 
-    | 'CLAUDE.md Structure' 
-    | 'Context Management' 
-    | 'Plan vs Act Mode' 
-    | 'Subagents & Workflows' 
-    | 'Skills & Custom Tools' 
-    | 'MCP Server Integration' 
-    | 'Git & Code Review' 
-    | 'Refactoring & Debugging' 
+  topic:
+    | 'CLI & Config'
+    | 'CLAUDE.md Structure'
+    | 'Context Management'
+    | 'Plan vs Act Mode'
+    | 'Subagents & Workflows'
+    | 'Skills & Custom Tools'
+    | 'MCP Server Integration'
+    | 'Git & Code Review'
+    | 'Refactoring & Debugging'
     | 'Large Repo Exploration';
   objective: string;
   promptExample: string;
@@ -194,15 +194,15 @@ export interface ClaudeCodeExercise {
 export interface EnglishSession {
   id: string;
   dayNumber: number;
-  category: 
-    | 'Self Introduction' 
-    | 'Java Architecture' 
-    | 'Spring Internals' 
-    | 'Database Optimization' 
-    | 'Microservices' 
-    | 'System Design' 
-    | 'Production Incident' 
-    | 'Leadership & Conflict' 
+  category:
+    | 'Self Introduction'
+    | 'Java Architecture'
+    | 'Spring Internals'
+    | 'Database Optimization'
+    | 'Microservices'
+    | 'System Design'
+    | 'Production Incident'
+    | 'Leadership & Conflict'
     | 'Failure Postmortem';
   dailySentences: string[];
   technicalExplanationTopic: string;

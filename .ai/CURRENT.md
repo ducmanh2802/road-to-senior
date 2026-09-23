@@ -15,6 +15,18 @@ Completed phases:
     Pinia learning store, StatCard, ProgressBar, CommandCenterPage, React slice retired
 Active work: none
 
+## Phase 005–007 Status (Review slice)
+- Phase 005/007 — Review vertical slice: COMPLETE (commit 5d38001)
+  - Real ReviewPage.vue replaces placeholder; /review route lazy-loads it
+  - Store action recordReviewAnswer (SM-2 engine) added; storage schema unchanged
+  - Shared Vue UI primitives added under src/vue/components/ui/ (Button, Card,
+    Badge, IconButton, Modal, Input, Textarea, Select, StatusIndicator, CodeBlock)
+- Today slice repair: COMPLETE (commit 39a0ee1) — page previously imported
+  non-existent @/ components/icons and store actions; now fully wired + tested
+- Verification: Vitest 9 files / 82 tests PASS, vue-tsc + tsc 0 errors, build PASS
+- Next phase: Phase 008 — next vertical slice migration (candidates per
+  ROADMAP: Interview, Knowledge, or Analytics views)
+
 ## Phase 003 Vertical Slice Status
 - Phase: Phase 003 — First Real Vertical-Slice Migration
 - Selected slice: Command Center (Dashboard)

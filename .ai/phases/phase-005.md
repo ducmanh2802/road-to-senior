@@ -1,12 +1,33 @@
-# Phase 005 – Higher‑Complexity Slice Migration
+# Phase 007 – Review page slice
 
-**Objective**: Migrate a feature that involves multiple UI states, server data, filtering, and modals. For this example we will migrate the **Review page**.
+## Objective
+Migrate the real React Review feature (spaced-repetition flashcards) to Vue 3.
 
-**Steps**
-1. Audit the existing React `ReviewView` component (if present) and list required UI elements.
-2. Create `src/vue/pages/ReviewPage.vue` using the Pinia `useLearningStore` and existing UI primitives.
-3. Add a route `/review` in `src/vue/router/index.ts`.
-4. Write unit tests `src/vue/__tests__/review.test.ts`.
-5. Run type‑check, tests, and build.
-6. Record PASS in this file and update `.ai/CURRENT.md`.
+## Status: PASS (5d38001)
+
+## Implemented
+- `src/vue/pages/ReviewPage.vue` — full port of React `ReviewView`:
+  due-card deck (due-first with full-deck fallback), active-recall draft input,
+  reveal → SM-2 grading (AGAIN/HARD/GOOD/EASY), deck-complete EmptyState, session reset.
+- `src/vue/stores/learning.ts` — added `recordReviewAnswer` action using the
+  deterministic SM-2 engine (`src/engines/sm2.ts`); persists via existing
+  `saveToStorage` (SENIOR_JAVA_180_STATE_V1 schema unchanged).
+- `src/vue/router/index.ts` — `/review` now lazy-loads the real page.
+- `src/vue/__tests__/review.test.ts` — 4 tests (empty state, prompt render,
+  reveal+grade SM-2 results, deck completion + reset).
+- `src/vue/__tests__/commandCenter.test.ts` — updated navigation test to wait
+  for the lazy-loaded route to settle (behavior assertion unchanged).
+
+## Verification
+- Vitest: PASS (9 files, 82 tests)
+- vue-tsc / tsc: PASS (0 errors)
+- Vite production build: PASS
+
+# Phase 006 – Higher-Complexity Slice prep
+
+## Status: PASS (documentation)
+
+# Phase 005 – Higher-Complexity Slice Migration
+
+## Status: PASS (superseded by the real Review slice in Phase 007)
 

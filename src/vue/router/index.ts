@@ -122,7 +122,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/interview',
     name: 'interview',
-    component: PagePlaceholder,
+    component: () => import('../pages/InterviewPage.vue'),
     meta: { section: 'INTERVIEW', title: 'Interview' },
   },
   {

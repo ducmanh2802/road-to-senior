@@ -9,6 +9,7 @@ import type {
   DSAProblem,
   ProjectFeature,
   IncidentScenario,
+  InterviewQuestion,
   CompetencyReadiness,
 } from '../../types';
 import {
@@ -19,6 +20,7 @@ import {
   INITIAL_DSA_PROBLEMS,
   INITIAL_PROJECT_FEATURES,
   INITIAL_INCIDENTS,
+  INITIAL_INTERVIEW_QUESTIONS,
 } from '../../data/seedData';
 import { calculateCompetencies, findWeakestDimension } from '../../engines/competency';
 import { calculateSm2Review } from '../../engines/sm2';
@@ -46,6 +48,7 @@ export const useLearningStore = defineStore('learning', () => {
   const dsaProblems = ref<DSAProblem[]>([]);
   const projectFeatures = ref<ProjectFeature[]>([]);
   const incidents = ref<IncidentScenario[]>([]);
+  const interviewQuestions = ref<InterviewQuestion[]>([...INITIAL_INTERVIEW_QUESTIONS]);
 
   const status = ref<'loading' | 'error' | 'empty' | 'success'>('loading');
   const errorMessage = ref<string | null>(null);
@@ -64,6 +67,7 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems: dsaProblems.value,
         projectFeatures: projectFeatures.value,
         incidents: incidents.value,
+        interviewQuestions: interviewQuestions.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -82,6 +86,7 @@ export const useLearningStore = defineStore('learning', () => {
     dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
     projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
     incidents.value = [...INITIAL_INCIDENTS];
+    interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
@@ -107,6 +112,9 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = Array.isArray(parsed.dsaProblems) ? parsed.dsaProblems : [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = Array.isArray(parsed.projectFeatures) ? parsed.projectFeatures : [...INITIAL_PROJECT_FEATURES];
         incidents.value = Array.isArray(parsed.incidents) ? parsed.incidents : [...INITIAL_INCIDENTS];
+        interviewQuestions.value = Array.isArray(parsed.interviewQuestions)
+          ? parsed.interviewQuestions
+          : [...INITIAL_INTERVIEW_QUESTIONS];
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -119,6 +127,7 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
         incidents.value = [...INITIAL_INCIDENTS];
+        interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
         saveToStorage();
       }
 
@@ -197,6 +206,26 @@ export const useLearningStore = defineStore('learning', () => {
         ],
       };
     });
+    saveToStorage();
+  }
+
+  /**
+   * Create a due-now review card from a mistake (e.g. failed interview
+   * question). Mirrors LearningContext.tsx createReviewCardFromMistake.
+   */
+  function createReviewCardFromMistake(question: string, expectedAnswer: string, category: string): void {
+    const newCard: ReviewCard = {
+      id: 'card-err-' + Date.now(),
+      category: category.toUpperCase(),
+      question,
+      expectedAnswer,
+      intervalDays: 1,
+      repetitionCount: 0,
+      easeFactor: 2.2,
+      nextReviewAt: new Date().toISOString(),
+      history: [],
+    };
+    reviewCards.value = [newCard, ...reviewCards.value];
     saveToStorage();
   }
 
@@ -312,6 +341,7 @@ export const useLearningStore = defineStore('learning', () => {
     dsaProblems,
     projectFeatures,
     incidents,
+    interviewQuestions,
     status,
     errorMessage,
     errorDetail,
@@ -322,6 +352,7 @@ export const useLearningStore = defineStore('learning', () => {
     setTaskState,
     updateTaskNotes,
     recordReviewAnswer,
+    createReviewCardFromMistake,
     daysRemaining,
     completedTasksCount,
     totalTasksCount,

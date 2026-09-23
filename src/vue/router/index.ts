@@ -128,7 +128,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/review',
     name: 'review',
-    component: PagePlaceholder,
+    component: () => import('../pages/ReviewPage.vue'),
     meta: { section: 'REVIEW', title: 'Review' },
   },
   {

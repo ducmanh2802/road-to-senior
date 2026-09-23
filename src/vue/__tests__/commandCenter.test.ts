@@ -87,9 +87,15 @@ describe('CommandCenterPage (Vue 3 Vertical Slice)', () => {
     await router.push('/');
     await flushPromises();
 
-    // 2. Click Reviews Due StatCard
+    // 2. Click Reviews Due StatCard. /review is lazy-loaded, so the first
+    // navigation resolves only after the dynamic import completes — wait for
+    // the route to settle instead of assuming a single flush is enough.
     await wrapper.find('[data-testid="stat-reviews"]').trigger('click');
     await flushPromises();
+    for (let i = 0; i < 20 && router.currentRoute.value.path !== '/review'; i++) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
+    }
     expect(router.currentRoute.value.path).toBe('/review');
 
     // Reset to '/'

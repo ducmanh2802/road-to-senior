@@ -21,6 +21,8 @@ import {
   INITIAL_INCIDENTS,
 } from '../../data/seedData';
 import { calculateCompetencies, findWeakestDimension } from '../../engines/competency';
+import { calculateSm2Review } from '../../engines/sm2';
+import type { ReviewGrade } from '../../types';
 
 export const STORAGE_KEY = 'SENIOR_JAVA_180_STATE_V1';
 
@@ -173,6 +175,31 @@ export const useLearningStore = defineStore('learning', () => {
     saveToStorage();
   }
 
+  /**
+   * Record a graded review: applies the deterministic SM-2 engine
+   * (src/engines/sm2.ts) and appends to the card history. Mirrors
+   * LearningContext.tsx recordReviewAnswer semantics.
+   */
+  function recordReviewAnswer(cardId: string, grade: ReviewGrade, durationSec: number): void {
+    reviewCards.value = reviewCards.value.map(card => {
+      if (card.id !== cardId) return card;
+      const sm2Result = calculateSm2Review(card, grade);
+      return {
+        ...card,
+        ...sm2Result,
+        history: [
+          ...card.history,
+          {
+            date: sm2Result.lastReviewedAt,
+            grade,
+            durationSec,
+          },
+        ],
+      };
+    });
+    saveToStorage();
+  }
+
   // Derived state
   const daysRemaining = computed(() => Math.max(0, 180 - currentDay.value));
 
@@ -294,6 +321,7 @@ export const useLearningStore = defineStore('learning', () => {
     addTask,
     setTaskState,
     updateTaskNotes,
+    recordReviewAnswer,
     daysRemaining,
     completedTasksCount,
     totalTasksCount,

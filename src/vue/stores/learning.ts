@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
   LearningTask,
+  TaskState,
   RoadmapDay,
   KnowledgeTopic,
   ReviewCard,
@@ -134,6 +135,44 @@ export const useLearningStore = defineStore('learning', () => {
   // Initialize immediately
   loadFromStorage();
 
+  // ---- Task actions (mirror LearningContext.tsx semantics) ----
+
+  /**
+   * Create a task for the current roadmap day. New tasks start in TODO state;
+   * `state`/`id`/`dayNumber` are owned by the store, not the caller.
+   */
+  function addTask(
+    task: Pick<LearningTask, 'title' | 'description' | 'category' | 'estimatedMinutes'> &
+      Partial<Pick<LearningTask, 'dayNumber' | 'notes' | 'codeSnippet' | 'externalLink'>>
+  ): void {
+    const newTask: LearningTask = {
+      ...task,
+      id: 'task-' + Date.now(),
+      dayNumber: task.dayNumber ?? currentDay.value,
+      state: 'TODO',
+    };
+    tasks.value = [newTask, ...tasks.value];
+    saveToStorage();
+  }
+
+  function setTaskState(taskId: string, state: TaskState): void {
+    tasks.value = tasks.value.map(t => {
+      if (t.id !== taskId) return t;
+      const isNowCompleted = state === 'COMPLETED';
+      return {
+        ...t,
+        state,
+        completedAt: isNowCompleted ? new Date().toISOString() : undefined,
+      };
+    });
+    saveToStorage();
+  }
+
+  function updateTaskNotes(taskId: string, notes: string): void {
+    tasks.value = tasks.value.map(t => (t.id === taskId ? { ...t, notes } : t));
+    saveToStorage();
+  }
+
   // Derived state
   const daysRemaining = computed(() => Math.max(0, 180 - currentDay.value));
 
@@ -252,6 +291,9 @@ export const useLearningStore = defineStore('learning', () => {
     loadFromStorage,
     resetToDemo,
     saveToStorage,
+    addTask,
+    setTaskState,
+    updateTaskNotes,
     daysRemaining,
     completedTasksCount,
     totalTasksCount,

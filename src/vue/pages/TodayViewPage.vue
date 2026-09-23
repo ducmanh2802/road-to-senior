@@ -21,16 +21,16 @@
     </div>
 
     <!-- Add Task Modal -->
-    <Modal v-if="isAddingTask" title="Create New Task" @close="isAddingTask = false">
+    <Modal :is-open="isAddingTask" title="Create New Task" @close="isAddingTask = false">
       <form @submit.prevent="handleCreateTask">
         <Input label="Title" v-model="newTaskTitle" required />
-        <Textarea label="Description" v-model="newTaskDesc" rows="3" />
+        <Textarea label="Description" v-model="newTaskDesc" :rows="3" />
         <Select label="Category" v-model="newTaskCategory">
           <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
         </Select>
         <div class="flex justify-end gap-2 pt-2 border-t border-[#1E293B]">
           <Button variant="ghost" size="sm" @click="isAddingTask = false">Cancel</Button>
-          <Button type="submit" variant="primary" size="sm" icon="Plus">Create Task</Button>
+          <Button type="submit" variant="primary" size="sm" :icon="Plus">Create Task</Button>
         </div>
       </form>
     </Modal>
@@ -40,7 +40,8 @@
       <EmptyState
         title="No tasks match filter"
         description="There are no engineering tasks found for this category today. Create a custom task or reset your filter."
-        :action="{ label: 'Reset Filter', onClick: () => (filterCategory = 'ALL') }"
+        action-label="Reset Filter"
+        @action="filterCategory = 'ALL'"
       />
     </div>
     <div v-else class="space-y-3">
@@ -96,7 +97,7 @@
               >Complete</Button>
               <IconButton size="sm" variant="secondary" :icon="FastForward" label="Skip for today" @click="handleSkipTask(task.id)" />
             </template>
-            <IconButton size="sm" variant="secondary" :icon="FileEdit" label="Edit engineering notes" @click="openNoteEditor(task)" />
+            <IconButton size="sm" variant="secondary" :icon="FileEdit" label="Edit engineering notes" @click="openNoteEditor(task.id, task.notes)" />
             <IconButton
               size="sm"
               variant="secondary"
@@ -115,7 +116,7 @@
             <p class="text-[#E5E7EB] whitespace-pre-wrap font-sans leading-relaxed">{{ task.notes }}</p>
           </div>
           <div v-else-if="editingNotesTaskId === task.id" class="space-y-2 mt-2">
-            <Textarea label="EDIT NOTES" rows="3" v-model="noteText" placeholder="Log your implementation observations, edge cases, or profiling results..." />
+            <Textarea label="EDIT NOTES" :rows="3" v-model="noteText" placeholder="Log your implementation observations, edge cases, or profiling results..." />
             <div class="flex items-center justify-end gap-2">
               <Button variant="ghost" size="sm" @click="cancelEditNotes">Cancel</Button>
               <Button variant="primary" size="sm" @click="saveNotes(task.id)">Save Notes</Button>
@@ -129,24 +130,25 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useLearningStore } from '@/stores/learning';
-import Button from '@/components/ui/Button.vue';
-import Modal from '@/components/ui/Modal.vue';
-import Card from '@/components/ui/Card.vue';
-import Badge from '@/components/ui/Badge.vue';
-import IconButton from '@/components/ui/IconButton.vue';
-import CodeBlock from '@/components/ui/CodeBlock.vue';
-import Textarea from '@/components/ui/Textarea.vue';
-import Input from '@/components/ui/Input.vue';
-import Select from '@/components/ui/Select.vue';
-import EmptyState from '@/components/ui/EmptyState.vue';
-import StatusIndicator from '@/components/ui/StatusIndicator.vue';
-import { Plus, Play, Check, FastForward, FileEdit, ChevronUp, ChevronDown, Clock } from '@/icons';
+import { Plus, Play, Check, FastForward, FileEdit, ChevronUp, ChevronDown, Clock } from 'lucide-vue-next';
+import { useLearningStore } from '../stores/learning';
+import Button from '../components/ui/Button.vue';
+import Modal from '../components/ui/Modal.vue';
+import Card from '../components/ui/Card.vue';
+import Badge from '../components/ui/Badge.vue';
+import IconButton from '../components/ui/IconButton.vue';
+import CodeBlock from '../components/ui/CodeBlock.vue';
+import Textarea from '../components/ui/Textarea.vue';
+import Input from '../components/ui/Input.vue';
+import Select from '../components/ui/Select.vue';
+import EmptyState from '../components/EmptyState.vue';
+import StatusIndicator from '../components/ui/StatusIndicator.vue';
+import type { TaskCategory, TaskState } from '../../types';
 
 const store = useLearningStore();
 
 // UI state
-const filterCategory = ref<'ALL' | 'NEW' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'>('ALL');
+const filterCategory = ref<'ALL' | TaskCategory>('ALL');
 const expandedTaskId = ref<string | null>(null);
 const editingNotesTaskId = ref<string | null>(null);
 const noteText = ref('');
@@ -155,36 +157,55 @@ const noteText = ref('');
 const isAddingTask = ref(false);
 const newTaskTitle = ref('');
 const newTaskDesc = ref('');
-const newTaskCategory = ref('NEW');
+const newTaskCategory = ref<TaskCategory>('JAVA');
 
-const allCategories = ['NEW', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'];
-const filterCategories = ['ALL', ...allCategories];
+const allCategories: TaskCategory[] = [
+  'JAVA',
+  'HANDS_ON',
+  'DSA',
+  'SYSTEM_DESIGN',
+  'SPRING',
+  'MICROSERVICES',
+  'CLAUDE_CODE',
+  'ENGLISH',
+  'REVIEW',
+];
+const filterCategories: Array<'ALL' | TaskCategory> = ['ALL', ...allCategories];
 
 const filteredTasks = computed(() => {
   if (filterCategory.value === 'ALL') return store.tasks;
   return store.tasks.filter(t => t.category === filterCategory.value);
 });
 
-function cardClass(task: any) {
+function cardClass(task: TaskStateHolder): string {
   if (task.state === 'COMPLETED') return 'border-[#22C55E]/30 opacity-80';
   if (task.state === 'IN_PROGRESS') return 'border-[#38BDF8]/50 shadow-md shadow-[#38BDF8]/5';
   return 'border-[#1E293B]';
 }
 
-function categoryMeta(cat: string) {
-  const map: Record<string, { variant: string; label: string }> = {
-    NEW: { variant: 'info', label: 'New' },
-    IN_PROGRESS: { variant: 'warning', label: 'In Progress' },
-    COMPLETED: { variant: 'success', label: 'Completed' },
-    BLOCKED: { variant: 'danger', label: 'Blocked' },
-  };
-  return map[cat] || { variant: 'default', label: cat };
+interface TaskStateHolder {
+  state: TaskState;
 }
 
-function handleStartTask(id: string) {
+function categoryMeta(cat: TaskCategory): { variant: 'info' | 'warning' | 'success' | 'danger' | 'default' | 'primary' | 'purple' | 'cyan' | 'pink'; label: string } {
+  const map: Record<TaskCategory, { variant: 'info' | 'warning' | 'success' | 'danger' | 'default' | 'primary' | 'purple' | 'cyan' | 'pink'; label: string }> = {
+    JAVA: { variant: 'primary', label: 'Java' },
+    HANDS_ON: { variant: 'cyan', label: 'Hands-on' },
+    DSA: { variant: 'purple', label: 'DSA' },
+    SYSTEM_DESIGN: { variant: 'info', label: 'System Design' },
+    SPRING: { variant: 'success', label: 'Spring' },
+    MICROSERVICES: { variant: 'warning', label: 'Microservices' },
+    CLAUDE_CODE: { variant: 'pink', label: 'Claude Code' },
+    ENGLISH: { variant: 'default', label: 'English' },
+    REVIEW: { variant: 'danger', label: 'Review' },
+  };
+  return map[cat] ?? { variant: 'default', label: cat };
+}
+
+function handleStartTask(id: string): void {
   store.setTaskState(id, 'IN_PROGRESS');
 }
-function handleCompleteTask(id: string) {
+function handleCompleteTask(id: string): void {
   const task = store.tasks.find(t => t.id === id);
   if (task?.state === 'COMPLETED') {
     store.setTaskState(id, 'IN_PROGRESS');
@@ -192,25 +213,25 @@ function handleCompleteTask(id: string) {
     store.setTaskState(id, 'COMPLETED');
   }
 }
-function handleSkipTask(id: string) {
-  store.setTaskState(id, 'BLOCKED');
+function handleSkipTask(id: string): void {
+  store.setTaskState(id, 'SKIPPED');
 }
-function toggleExpand(id: string) {
+function toggleExpand(id: string): void {
   expandedTaskId.value = expandedTaskId.value === id ? null : id;
 }
-function openNoteEditor(task: any) {
-  editingNotesTaskId.value = task.id;
-  noteText.value = task.notes ?? '';
+function openNoteEditor(taskId: string, currentNotes: string | undefined): void {
+  editingNotesTaskId.value = taskId;
+  noteText.value = currentNotes ?? '';
 }
-function cancelEditNotes() {
+function cancelEditNotes(): void {
   editingNotesTaskId.value = null;
   noteText.value = '';
 }
-function saveNotes(id: string) {
+function saveNotes(id: string): void {
   store.updateTaskNotes(id, noteText.value);
   editingNotesTaskId.value = null;
 }
-function handleCreateTask() {
+function handleCreateTask(): void {
   if (!newTaskTitle.value.trim()) return;
   store.addTask({
     title: newTaskTitle.value,
@@ -220,7 +241,7 @@ function handleCreateTask() {
   });
   newTaskTitle.value = '';
   newTaskDesc.value = '';
-  newTaskCategory.value = 'NEW';
+  newTaskCategory.value = 'JAVA';
   isAddingTask.value = false;
 }
 </script>

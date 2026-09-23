@@ -18,6 +18,8 @@ const commands: Command[] = [
   { label: 'Go to Roadmap', to: '/learning/roadmap', section: 'Learning' },
   { label: 'Go to Learning Path', to: '/learning', section: 'Navigation' },
   { label: 'Go to Java 25', to: '/learning/java', section: 'Learning' },
+  { label: 'Go to AI Knowledge', to: '/learning/ai', section: 'Learning' },
+  { label: 'Go to Technical English', to: '/english', section: 'Learning' },
   { label: 'Go to Spring Boot', to: '/learning/spring', section: 'Learning' },
   { label: 'Go to Architecture', to: '/architecture', section: 'Navigation' },
   { label: 'Go to AWS AIF-C01', to: '/certifications/aws/aif-c01', section: 'Certifications' },

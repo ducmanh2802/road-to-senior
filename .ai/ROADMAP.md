@@ -11,6 +11,7 @@ Phase 006.1 — SonarQube & Quality Gate         DONE
 Phase 007 — Settings & State Backup Slice      DONE
 Phase 008 — 180-Day Roadmap Explorer Slice     DONE
 Phase 009 — CodeBlock & Core Curriculum Tracks DONE
+Phase AI-SJ — AI Knowledge Foundation (Senior Java) DONE
 Phase 010 — Microservices & Claude Code Labs   PLANNED
 Phase 011 — Analytics & Readiness Slice        PLANNED
 Phase 012 — DSA Pattern Practice Slice         PLANNED
@@ -21,8 +22,8 @@ Phase 016 — Production Incident Chaos Lab      PLANNED
 Phase 017 — Senior Interview Drills Slice      PLANNED
 Phase 018 — AWS AIF-C01 Certification Track    PLANNED
 Phase 019 — Pure Vue Cutover & React Removal   FINAL
-Phase E01+ — English Learning Track Expansion  PLANNED (architecture approved)
-   … E01: English Foundation & Schema Extension
+Phase E01+ — English Learning Track Expansion  IN PROGRESS
+   … E01: Technical English for Senior Java    DONE
    … E02: TOEIC Core Practice (Reading/Listening)
    … E03: Workplace & Technical Communication
    … E04: Technical English & Deep Java/AWS Integration

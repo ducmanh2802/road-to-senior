@@ -41,6 +41,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { section: 'LEARNING', title: 'Java 25' },
   },
   {
+    path: '/learning/ai',
+    name: 'learning-ai',
+    component: () => import('../pages/AIKnowledgePage.vue'),
+    meta: { section: 'LEARNING', title: 'AI Knowledge' },
+  },
+  {
     path: '/learning/spring',
     name: 'learning-spring',
     component: PagePlaceholder,
@@ -159,6 +165,12 @@ export const routes: RouteRecordRaw[] = [
     name: 'settings',
     component: () => import('../pages/SettingsPage.vue'),
     meta: { section: 'SETTINGS', title: 'Settings & Local Storage' },
+  },
+  {
+    path: '/english',
+    name: 'english',
+    component: () => import('../pages/EnglishPage.vue'),
+    meta: { section: 'LEARNING', title: 'Technical English' },
   },
   {
     path: '/:pathMatch(.*)*',

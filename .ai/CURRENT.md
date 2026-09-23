@@ -1,12 +1,29 @@
 # CURRENT STATE
 
-Last Updated: 2026-09-19
+Last Updated: 2026-09-23
 Project: Senior Java 180 (client-side learning platform; no backend)
 Current frontend: Vue 3 (hard-cutover foundation, entry = src/vue/main.ts);
   React source retained as migration reference only
 Target frontend: Vue 3 + TypeScript + Vue Router + Pinia
 Backend: none (target: Java 25 / Spring Boot 4.1.x — NOT started)
-Current phase: Phase 009 completed — CodeBlock + Java 25 / Spring Boot 4.1
+Current phase: Phase P0-1.2 completed — Sealed Classes & Exhaustive Pattern Matching
+Completed phases:
+  - Phase P0-1.2 — Sealed Classes & Exhaustive Pattern Matching: LearningJavaPage.vue (/learning/java),
+    src/data/javaCoreCurriculum.ts (Module 1.2 full 11-stage engineering loop, algebraic sum types,
+    PaymentResult domain, JavaFailureLab variant fall-through simulator, 11-question assessment),
+    102/102 unit tests PASS.
+  - Phase P0-1.1 — Java Core Foundation + Module 1.1: LearningJavaPage.vue (/learning/java),
+    src/data/javaCoreCurriculum.ts (20 modules across Language, JVM, Concurrency; full 11-stage
+    engineering loop for Module 1.1), JavaCoreAssessment.vue, JavaFailureLab.vue, Pinia store
+    Java progress tracking (persisted to localStorage), 99/99 tests PASS.
+  - Phase E01 — Technical English for Senior Java: EnglishPage.vue (/english),
+    src/data/technicalEnglish.ts (10 technical sections, collocations, speaking prompts,
+    common misconceptions, Vietnamese engineering notes), Pinia store English completion
+    persistence, interactive Quiz mode (EnglishQuiz.vue, 5-question MCQ, score tracking & breakdown),
+    focused tests, router/navigation/CommandPalette integration, independent from React-to-Vue migration
+  - Phase AI-SJ — AI Knowledge Foundation for Senior Java: AIKnowledgePage.vue (/learning/ai),
+    src/data/aiSeniorJava.ts (9 enterprise tracks, RAG lifecycle, LLM integration, agent loops),
+    Pinia store AI completion persistence, focused tests, router/navigation/CommandPalette integration
 Completed phases:
   - Phase 001 (f74fed7) — platform baseline: governance v1, 2 TS fixes, ADRs 1-3
   - Phase 002 (ea95274) — Vue shell: AppShell/Sidebar/TopBar, 22 routes,
@@ -35,6 +52,30 @@ Completed phases:
     LearningJavaPage.vue 6-stage engineering loop, codeBlock and learningJava test suites
     (20 new tests, 120/120 full suite PASS), quality pipeline PASS
 Active work: none
+
+## Phase E01 Quality Gate Status
+- Phase: Phase E01 — Technical English for Senior Java
+- Status: PASS
+- Free Autonomous Quality Gate:
+  - TypeScript (tsc --noEmit): PASS (0 errors)
+  - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
+  - ESLint 9 (eslint .): PASS (0 errors)
+  - Vitest (vitest run): PASS (15 test files, 142/142 tests passing)
+  - Gitleaks (gitleaks detect): PASS (0 leaks found)
+  - Vite Build (vite build): PASS
+- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED, independent of Phase E01)
+
+## Phase AI-SJ Quality Gate Status
+- Phase: Phase AI-SJ — AI Knowledge Foundation for Senior Java
+- Status: PASS
+- Free Autonomous Quality Gate:
+  - TypeScript (tsc --noEmit): PASS (0 errors)
+  - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
+  - ESLint 9 (eslint .): PASS (0 errors)
+  - Vitest (vitest run): PASS (14 test files, 131/131 tests passing)
+  - Gitleaks (gitleaks detect): PASS (0 leaks found)
+  - Vite Build (vite build): PASS
+- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED, independent of Phase E01)
 
 ## Phase 009 Quality Gate Status
 - Phase: Phase 009 — CodeBlock + Java 25 / Spring Boot 4.1

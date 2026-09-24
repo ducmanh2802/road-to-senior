@@ -53,8 +53,8 @@ const expandedItemIds = ref<Record<string, boolean>>({
 // Active Drill Tab per card: 'explain' | 'design' | 'break' | 'interview'
 const activeDrillTabs = ref<Record<string, 'explain' | 'design' | 'break' | 'interview'>>({});
 
-// Architecture diagram visibility
-const showArchitectureDetails = ref(true);
+// Architecture diagram visibility — collapsed by default so the topic list leads
+const showArchitectureDetails = ref(false);
 
 // Track icon mapping
 const trackIconMap = {
@@ -223,32 +223,38 @@ function clearFilters(): void {
       </div>
     </div>
 
-    <!-- Architectural Visual Section -->
+    <!-- Architectural reference: collapsed by default (topic list leads) -->
     <section
       data-testid="architecture-diagram-section"
-      class="ui-panel p-4 sm:p-5 border border-[#1E293B] bg-[#111622] rounded-lg space-y-3"
-      aria-label="Enterprise AI Architecture Visual"
+      class="ui-panel p-4 sm:p-5 space-y-3"
+      aria-label="Enterprise AI architecture reference"
     >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Layers class="w-4 h-4 text-[#38BDF8]" aria-hidden="true" />
-          <h2 class="text-sm font-bold text-[#F8FAFC] tracking-wide uppercase font-mono">
-            Enterprise AI Gateway & Microservice Topology
-          </h2>
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-2 min-w-0">
+          <Layers class="w-4 h-4 text-[#64748B] shrink-0 mt-0.5" aria-hidden="true" />
+          <div class="min-w-0">
+            <h2 class="text-sm font-semibold text-[#F1F5F9] tracking-tight">
+              Enterprise AI Gateway & Microservice Topology
+            </h2>
+            <p class="text-[11px] text-[#64748B] mt-0.5">
+              Reference topology and the end-to-end RAG lifecycle used across the tracks below.
+            </p>
+          </div>
         </div>
         <button
           type="button"
-          class="text-xs font-mono text-[#64748B] hover:text-[#38BDF8] flex items-center gap-1 focus-ring"
-          aria-label="Toggle architecture diagram details"
+          class="text-xs font-mono text-[#94A3B8] hover:text-[#F1F5F9] flex items-center gap-1 focus-ring shrink-0 cursor-pointer"
+          :aria-expanded="showArchitectureDetails"
+          aria-label="Toggle architecture reference"
           @click="showArchitectureDetails = !showArchitectureDetails"
         >
-          <span>{{ showArchitectureDetails ? 'Hide Flow' : 'Show Flow' }}</span>
+          <span>{{ showArchitectureDetails ? 'Hide' : 'Show' }}</span>
           <ChevronUp v-if="showArchitectureDetails" class="w-3.5 h-3.5" aria-hidden="true" />
           <ChevronDown v-else class="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>
 
-      <!-- Conceptual ASCII Architecture Diagram -->
+      <!-- Conceptual architecture diagram -->
       <div v-show="showArchitectureDetails" class="pt-2 space-y-4">
         <div class="p-3.5 rounded bg-[#0B0E14] border border-[#1E293B] font-mono text-xs text-[#38BDF8] overflow-x-auto leading-relaxed">
           <pre data-testid="architecture-topology-ascii">

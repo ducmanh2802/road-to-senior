@@ -10,10 +10,13 @@ import {
 } from 'lucide-vue-next';
 import { useLearningStore } from '../stores/learning';
 import PageHeader from '../components/PageHeader.vue';
+import Button from '../components/ui/Button.vue';
+import Input from '../components/ui/Input.vue';
+import Textarea from '../components/ui/Textarea.vue';
 
 const store = useLearningStore();
 
-const dayInput = ref<number>(store.currentDay);
+const dayInput = ref<string>(String(store.currentDay));
 const dayFeedback = ref<string | null>(null);
 
 const importJsonText = ref<string>('');
@@ -25,17 +28,21 @@ const resetFeedback = ref<string | null>(null);
 watch(
   () => store.currentDay,
   (newDay) => {
-    dayInput.value = newDay;
+    dayInput.value = String(newDay);
   }
 );
 
 function handleUpdateDay(): void {
-  if (dayInput.value >= 1 && dayInput.value <= 180) {
-    store.setCurrentDay(dayInput.value);
-    dayFeedback.value = `Active day updated to Day ${dayInput.value}.`;
+  const parsed = Number.parseInt(dayInput.value, 10);
+  if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 180) {
+    store.setCurrentDay(parsed);
+    dayInput.value = String(parsed);
+    dayFeedback.value = `Active day updated to Day ${parsed}.`;
     setTimeout(() => {
       dayFeedback.value = null;
     }, 3000);
+  } else {
+    dayInput.value = String(store.currentDay);
   }
 }
 
@@ -69,7 +76,7 @@ function handleImport(): void {
 
 function handleReset(): void {
   store.resetToDemo();
-  dayInput.value = 37;
+  dayInput.value = String(37);
   resetFeedback.value = 'All data reset to factory demo baseline (Day 37).';
   setTimeout(() => {
     resetFeedback.value = null;
@@ -78,133 +85,122 @@ function handleReset(): void {
 </script>
 
 <template>
-  <div class="space-y-6 max-w-4xl mx-auto pb-12">
+  <div class="space-y-6 max-w-3xl mx-auto pb-12">
     <PageHeader
-      title="Settings & Local Storage Engine"
-      description="All progress is safely persisted in your browser's LocalStorage. Export your state anytime or adjust simulation parameters."
-      badge="Configuration & Recovery"
+      title="Settings"
+      description="All progress lives in this browser's local storage. Export a backup before switching machines, restore a previous snapshot, or reset everything back to the starter state."
     />
 
-    <!-- Active Day Override -->
-    <div class="rounded-lg border border-[#1B2433] bg-[#101623] p-5 space-y-3" data-testid="settings-day-card">
-      <h2 class="text-base font-bold text-[#F1F5F9] flex items-center gap-2">
-        <Calendar class="w-4 h-4 text-[#38BDF8]" aria-hidden="true" />
-        <span>Active Day Override</span>
-      </h2>
-      <p class="text-xs text-[#94A3B8]">
-        Switch your active workspace to any day between 1 and 180.
-      </p>
-
-      <form class="flex flex-wrap items-center gap-3 font-mono text-xs pt-1" @submit.prevent="handleUpdateDay">
-        <div class="w-28">
-          <input
-            v-model.number="dayInput"
-            type="number"
-            min="1"
-            max="180"
-            class="w-full rounded-md bg-[#0A0E17] border border-[#1B2433] px-3 py-1.5 text-xs font-mono text-[#F1F5F9] focus-ring"
-            aria-label="Active Day Input"
-          />
+    <div class="ui-panel divide-y divide-[#1B2433]">
+      <!-- Active day -->
+      <section class="p-5 space-y-3" data-testid="settings-day-card">
+        <div>
+          <h2 class="text-sm font-semibold text-[#F1F5F9] flex items-center gap-2">
+            <Calendar class="w-4 h-4 text-[#64748B]" aria-hidden="true" />
+            <span>Active day</span>
+          </h2>
+          <p class="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+            Move the workspace to any day between 1 and 180. The roadmap, Today view and Command Center all follow this value.
+          </p>
         </div>
-        <button
-          type="submit"
-          class="rounded-md bg-[#38BDF8] px-3.5 py-1.5 text-xs font-mono font-semibold text-[#0A0E17] hover:bg-[#0284C7] focus-ring cursor-pointer"
-        >
-          Update Day
-        </button>
-        <span
-          v-if="dayFeedback"
-          class="text-xs font-mono text-[#22C55E] flex items-center gap-1.5"
-          data-testid="day-feedback"
-        >
-          <CheckCircle2 class="w-3.5 h-3.5" />
-          {{ dayFeedback }}
-        </span>
-      </form>
-    </div>
 
-    <!-- Data Backup & State Migration -->
-    <div class="rounded-lg border border-[#1B2433] bg-[#101623] p-5 space-y-4" data-testid="settings-backup-card">
-      <h2 class="text-base font-bold text-[#F1F5F9] flex items-center gap-2">
-        <Database class="w-4 h-4 text-[#22C55E]" aria-hidden="true" />
-        <span>Data Backup & State Migration</span>
-      </h2>
+        <form class="flex flex-wrap items-end gap-3" @submit.prevent="handleUpdateDay">
+          <div class="w-28">
+            <Input
+              :model-value="dayInput"
+              type="number"
+              label="Day"
+              @update:model-value="dayInput = $event"
+            />
+          </div>
+          <Button type="submit" variant="secondary" size="md">Set active day</Button>
+          <span
+            v-if="dayFeedback"
+            class="text-xs text-[#22C55E] inline-flex items-center gap-1.5 pb-2"
+            data-testid="day-feedback"
+          >
+            <CheckCircle2 class="w-3.5 h-3.5" aria-hidden="true" />
+            {{ dayFeedback }}
+          </span>
+        </form>
+      </section>
 
-      <div>
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-md border border-[#38BDF8]/40 bg-[#38BDF8]/10 px-3.5 py-2 text-xs font-mono font-semibold text-[#38BDF8] hover:bg-[#38BDF8]/20 focus-ring cursor-pointer"
-          @click="handleExport"
-        >
-          <Download class="w-4 h-4" aria-hidden="true" />
-          <span>Export Full State (JSON)</span>
-        </button>
-      </div>
+      <!-- Backup / restore -->
+      <section class="p-5 space-y-4" data-testid="settings-backup-card">
+        <div>
+          <h2 class="text-sm font-semibold text-[#F1F5F9] flex items-center gap-2">
+            <Database class="w-4 h-4 text-[#64748B]" aria-hidden="true" />
+            <span>Backup & restore</span>
+          </h2>
+          <p class="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+            Export writes the full state (tasks, roadmap, cards, progress) to a JSON file. Restoring replaces the current state with the pasted payload.
+          </p>
+        </div>
 
-      <!-- Import JSON Box -->
-      <div class="space-y-3 pt-3 border-t border-[#1E293B] font-mono text-xs">
-        <label for="import-json-input" class="block text-[11px] text-[#94A3B8] font-bold">
-          RESTORE STATE FROM JSON BACKUP:
-        </label>
-        <textarea
-          id="import-json-input"
-          v-model="importJsonText"
-          rows="4"
-          placeholder="Paste your JSON backup payload here..."
-          class="w-full rounded bg-[#0B0E14] border border-[#1E293B] p-3 text-xs font-mono text-white placeholder-[#64748B] focus-ring"
-        />
+        <Button variant="secondary" size="md" :icon="Download" @click="handleExport">
+          Export Full State (JSON)
+        </Button>
 
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div>
+        <div class="space-y-3 pt-3 border-t border-[#1B2433]">
+          <Textarea
+            v-model="importJsonText"
+            label="Restore from JSON backup"
+            helper-text="Paste a backup payload produced by Export. Nothing changes until you press Restore."
+            :rows="4"
+            mono
+            placeholder="Paste your JSON backup payload here…"
+          />
+
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <span
               v-if="importStatus"
-              class="text-xs font-mono"
+              class="text-xs"
               :class="importSuccess ? 'text-[#22C55E]' : 'text-[#EF4444]'"
+              role="status"
               data-testid="import-status"
             >
               {{ importStatus }}
             </span>
+            <span v-else class="text-[11px] text-[#64748B]">Restoring replaces your current state.</span>
+
+            <Button
+              variant="success"
+              size="md"
+              :disabled="!importJsonText.trim()"
+              @click="handleImport"
+            >
+              Restore State
+            </Button>
           </div>
-
-          <button
-            type="button"
-            :disabled="!importJsonText.trim()"
-            class="rounded bg-[#22C55E] px-3.5 py-1.5 text-xs font-mono font-semibold text-[#0B0E14] hover:bg-[#16A34A] disabled:opacity-40 disabled:cursor-not-allowed focus-ring"
-            @click="handleImport"
-          >
-            Restore State
-          </button>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Factory Reset -->
-    <div class="rounded-lg border border-[#EF4444]/30 bg-[#111622] p-5 space-y-3" data-testid="settings-reset-card">
-      <h2 class="text-base font-bold text-[#EF4444] flex items-center gap-2">
-        <AlertTriangle class="w-4 h-4" aria-hidden="true" />
-        <span>Factory Demo Reset</span>
-      </h2>
-      <p class="text-xs text-[#94A3B8]">
-        Reset all study sessions, cards, DSA problems, and task states back to initial pristine seed data.
-      </p>
+      <!-- Destructive reset -->
+      <section class="p-5 space-y-3" data-testid="settings-reset-card">
+        <div>
+          <h2 class="text-sm font-semibold text-[#EF4444] flex items-center gap-2">
+            <AlertTriangle class="w-4 h-4" aria-hidden="true" />
+            <span>Reset to starter state</span>
+          </h2>
+          <p class="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+            Discards every task state, review schedule and drill result, and reloads the starter content at day 37. This cannot be undone.
+          </p>
+        </div>
 
-      <div class="flex flex-wrap items-center gap-3 pt-1">
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded bg-[#EF4444] px-3.5 py-2 text-xs font-mono font-semibold text-white hover:bg-[#DC2626] focus-ring"
-          @click="handleReset"
-        >
-          <RotateCcw class="w-4 h-4" aria-hidden="true" />
-          <span>Reset All Data to Demo Baseline</span>
-        </button>
-        <span
-          v-if="resetFeedback"
-          class="text-xs font-mono text-[#F59E0B]"
-          data-testid="reset-feedback"
-        >
-          {{ resetFeedback }}
-        </span>
-      </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <Button variant="danger" size="md" :icon="RotateCcw" @click="handleReset">
+            Reset All Data to Demo Baseline
+          </Button>
+          <span
+            v-if="resetFeedback"
+            class="text-xs text-[#F59E0B]"
+            role="status"
+            data-testid="reset-feedback"
+          >
+            {{ resetFeedback }}
+          </span>
+        </div>
+      </section>
     </div>
   </div>
 </template>

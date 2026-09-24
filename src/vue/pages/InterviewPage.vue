@@ -1,101 +1,99 @@
 <template>
-  <div class="p-4 space-y-6 max-w-6xl mx-auto pb-12">
+  <div class="space-y-6 max-w-5xl mx-auto pb-12">
     <PageHeader
-      title="Live Mock Interview & Grilling Arena"
-      description="Pressure-test your answers against real FAANG / Tier-1 Senior & Staff Java backend interview questions."
+      title="Interview Practice"
+      description="Answer out loud first, then compare your response against the rubric and the reference answer. Any question can be saved into the spaced-review deck."
     >
       <template #actions>
-        <Badge variant="success" size="sm" dot>Staff Interview Grilling Simulator</Badge>
-        <Button variant="primary" size="sm" :icon="RefreshCw" @click="handleNextQuestion">
-          Random Question
+        <Button variant="secondary" size="sm" :icon="RefreshCw" @click="handleNextQuestion">
+          Next question
         </Button>
       </template>
     </PageHeader>
 
-    <!-- Category Filter Pills -->
-    <Card variant="default" padding="sm">
-      <div class="flex items-center gap-2 overflow-x-auto">
-        <button
-          v-for="cat in categories"
-          :key="cat"
-          type="button"
-          :class="`px-3 py-1.5 rounded-md text-xs font-mono transition-colors whitespace-nowrap border cursor-pointer ${
-            selectedCategory === cat
-              ? 'bg-[#38BDF8] text-[#0A0E17] font-semibold border-[#38BDF8]'
-              : 'bg-[#151D2C] text-[#94A3B8] hover:text-[#F1F5F9] border-[#1B2433] hover:border-[#334155]'
-          }`"
-          @click="handleSelectCategory(cat)"
-        >
-          {{ cat.replace('_', ' ') }}
-        </button>
-      </div>
-    </Card>
+    <!-- Category filter: quiet segmented control -->
+    <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by category">
+      <button
+        v-for="cat in categories"
+        :key="cat"
+        type="button"
+        :aria-pressed="selectedCategory === cat"
+        :class="`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+          selectedCategory === cat
+            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
+        }`"
+        @click="handleSelectCategory(cat)"
+      >
+        {{ cat.replace('_', ' ') }}
+      </button>
+    </div>
 
-    <!-- Main Grilling Screen -->
+    <!-- Question workspace: question → rubric → reveal → reference answer -->
     <Card v-if="currentQ" variant="default" padding="lg" class="space-y-5">
-      <div class="flex items-center justify-between font-mono text-xs">
-        <Badge variant="primary" size="sm">{{ currentQ.category }} · {{ currentQ.difficulty }}</Badge>
-        <span class="text-[#64748B]">
-          Question {{ activeQuestionIndex + 1 }} of {{ filteredQuestions.length }}
+      <div class="flex items-center justify-between gap-3 text-[11px] font-mono text-[#64748B]">
+        <span>
+          {{ currentQ.category }} · {{ currentQ.difficulty }}
         </span>
+        <span>Question {{ activeQuestionIndex + 1 }} of {{ filteredQuestions.length }}</span>
       </div>
 
       <div class="space-y-2">
-        <div class="text-xs font-mono text-[#38BDF8] uppercase font-bold tracking-wider">
-          INTERVIEWER PROMPT:
-        </div>
         <h2 class="text-lg sm:text-xl font-bold text-[#F1F5F9] leading-snug">
           {{ currentQ.question }}
         </h2>
       </div>
 
-      <!-- Key points expected -->
-      <div class="p-4 bg-[#101623] border border-[#1B2433] rounded-lg font-mono text-xs space-y-2">
-        <div class="text-[10px] text-[#38BDF8] uppercase font-bold tracking-wider">
-          RUBRIC POINTS INTERVIEWER IS LISTENING FOR:
+      <!-- What the interviewer is listening for -->
+      <div class="border-l-2 border-[#38BDF8]/40 pl-4 space-y-2">
+        <div class="text-[11px] font-mono text-[#64748B] uppercase tracking-wider">
+          What the interviewer is listening for
         </div>
-        <ul class="space-y-1 text-[#94A3B8]">
-          <li v-for="(pt, idx) in currentQ.keyPointsExpected" :key="idx" class="flex items-start gap-2">
-            <span class="text-[#38BDF8] mt-0.5">•</span>
+        <ul class="space-y-1.5">
+          <li
+            v-for="(pt, idx) in currentQ.keyPointsExpected"
+            :key="idx"
+            class="text-xs text-[#94A3B8] leading-relaxed flex items-start gap-2"
+          >
+            <span class="text-[#38BDF8] font-mono shrink-0 mt-0.5" aria-hidden="true">–</span>
             <span>{{ pt }}</span>
           </li>
         </ul>
       </div>
 
-      <!-- Reveal & Review Card Actions -->
       <Button
         v-if="!showAnswer"
         variant="outline"
         size="lg"
-        class="w-full font-mono text-xs font-bold"
+        class="w-full"
         @click="showAnswer = true"
       >
-        Reveal Ideal Staff Architect Answer
+        Reveal reference answer
       </Button>
 
-      <div v-else class="space-y-4 pt-4 border-t border-[#1E293B]">
-        <div class="p-5 bg-[#151B28] border border-[#22C55E]/30 rounded-xl space-y-3">
-          <div class="flex items-center gap-2 text-xs font-mono text-[#22C55E] font-bold uppercase tracking-wider">
-            <CheckCircle2 class="w-4 h-4" aria-hidden="true" />
-            <span>IDEAL STAFF ARCHITECT RESPONSE:</span>
+      <div v-else class="space-y-4 pt-4 border-t border-[#1B2433]">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2 text-[11px] font-mono text-[#22C55E] uppercase tracking-wider">
+            <CheckCircle2 class="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Reference answer</span>
           </div>
-          <p class="text-sm text-[#F8FAFC] leading-relaxed whitespace-pre-wrap font-sans">
+          <p class="text-sm text-[#F1F5F9] leading-relaxed whitespace-pre-wrap">
             {{ currentQ.idealSeniorAnswer }}
           </p>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
           <Button
-            variant="outline"
+            variant="secondary"
             size="md"
             :disabled="createdReviewCard"
             @click="handleCreateReviewCardFromMistake"
           >
-            {{ createdReviewCard ? 'Card Created in Spaced Deck!' : 'Save as Spaced Review Flashcard' }}
+            {{ createdReviewCard ? 'Saved to review deck' : 'Save as review card' }}
           </Button>
 
           <Button variant="primary" size="md" @click="handleNextQuestion">
-            Next Interview Question
+            Next question
           </Button>
         </div>
       </div>
@@ -105,7 +103,9 @@
     <EmptyState
       v-else
       title="No questions in this category yet"
-      :description="`There are no interview questions for ${selectedCategory} in the current question bank.`"
+      :description="`There are no interview questions for ${selectedCategory} in the current question bank. Pick another category to continue.`"
+      action-label="Show all categories"
+      @action="handleSelectCategory('ALL')"
     />
   </div>
 </template>
@@ -116,7 +116,6 @@ import { CheckCircle2, RefreshCw } from 'lucide-vue-next';
 import { useLearningStore } from '../stores/learning';
 import PageHeader from '../components/PageHeader.vue';
 import Card from '../components/ui/Card.vue';
-import Badge from '../components/ui/Badge.vue';
 import Button from '../components/ui/Button.vue';
 import EmptyState from '../components/EmptyState.vue';
 import type { InterviewQuestion } from '../../types';

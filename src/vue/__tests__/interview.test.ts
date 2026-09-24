@@ -27,13 +27,12 @@ describe('InterviewPage.vue', () => {
     setActivePinia(createPinia());
   });
 
-  it('renders the grilling arena with seed questions', () => {
+  it('renders the practice workspace with seed questions', () => {
     const store = useLearningStore();
     expect(store.interviewQuestions.length).toBeGreaterThan(0);
     const wrapper = mount(InterviewPage);
-    expect(wrapper.text()).toContain('Live Mock Interview & Grilling Arena');
-    expect(wrapper.text()).toContain('INTERVIEWER PROMPT:');
-    expect(wrapper.text()).toContain('RUBRIC POINTS INTERVIEWER IS LISTENING FOR:');
+    expect(wrapper.text()).toContain('Interview Practice');
+    expect(wrapper.text()).toContain('What the interviewer is listening for');
   });
 
   it('filters questions by category and resets position', async () => {
@@ -63,15 +62,15 @@ describe('InterviewPage.vue', () => {
 
     const revealBtn = wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Reveal Ideal Staff Architect Answer'))[0];
+      .filter(b => b.text().includes('Reveal reference answer'))[0];
     await revealBtn.trigger('click');
 
-    expect(wrapper.text()).toContain('IDEAL STAFF ARCHITECT RESPONSE:');
+    expect(wrapper.text()).toContain('Reference answer');
     expect(wrapper.text()).toContain('Pre-JDK 24, synchronized blocks pinned carrier threads.');
 
     const saveBtn = wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Save as Spaced Review Flashcard'))[0];
+      .filter(b => b.text().includes('Save as review card'))[0];
     await saveBtn.trigger('click');
 
     expect(store.reviewCards).toHaveLength(cardsBefore + 1);
@@ -82,10 +81,10 @@ describe('InterviewPage.vue', () => {
     expect(new Date(created.nextReviewAt).getTime()).toBeLessThanOrEqual(Date.now());
 
     // button flips to confirmation and disables
-    expect(wrapper.text()).toContain('Card Created in Spaced Deck!');
+    expect(wrapper.text()).toContain('Saved to review deck');
     const disabledSave = wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Card Created in Spaced Deck!'))[0];
+      .filter(b => b.text().includes('Saved to review deck'))[0];
     expect(disabledSave.attributes('disabled')).toBeDefined();
   });
 
@@ -99,7 +98,7 @@ describe('InterviewPage.vue', () => {
 
     const nextBtn = wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Next Interview Question') || b.text().includes('Random Question'))[0];
+      .filter(b => b.text().includes('Next question'))[0];
     await nextBtn.trigger('click');
     expect(wrapper.text()).toContain('Second question?');
 

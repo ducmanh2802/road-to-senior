@@ -58,36 +58,38 @@ const filteredTasks = computed<LearningTask[]>(() => {
   return store.tasks.filter((t) => t.state === statusFilter.value);
 });
 
-function categoryBadgeClass(cat: TaskCategory): string {
-  const map: Record<TaskCategory, string> = {
-    JAVA: 'border-[#38BDF8]/40 bg-[#38BDF8]/10 text-[#38BDF8]',
-    HANDS_ON: 'border-[#22C55E]/40 bg-[#22C55E]/10 text-[#22C55E]',
-    DSA: 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[#F59E0B]',
-    SYSTEM_DESIGN: 'border-[#38BDF8]/30 bg-[#151D2C] text-[#94A3B8]',
-    SPRING: 'border-[#22C55E]/30 bg-[#151D2C] text-[#94A3B8]',
-    MICROSERVICES: 'border-[#1B2433] bg-[#151D2C] text-[#94A3B8]',
-    CLAUDE_CODE: 'border-[#1B2433] bg-[#151D2C] text-[#94A3B8]',
-    ENGLISH: 'border-[#1B2433] bg-[#151D2C] text-[#94A3B8]',
-    REVIEW: 'border-[#F59E0B]/30 bg-[#151D2C] text-[#94A3B8]',
-  };
-  return map[cat] || 'border-[#1B2433] bg-[#151D2C] text-[#94A3B8]';
+const TASK_STATE_LABELS: Record<TaskState, string> = {
+  TODO: 'To do',
+  IN_PROGRESS: 'In progress',
+  COMPLETED: 'Completed',
+  SKIPPED: 'Skipped',
+  OVERDUE: 'Overdue',
+};
+
+const TASK_STATE_TEXT_CLASSES: Record<TaskState, string> = {
+  TODO: 'text-[#94A3B8]',
+  IN_PROGRESS: 'text-[#38BDF8]',
+  COMPLETED: 'text-[#22C55E]',
+  SKIPPED: 'text-[#64748B]',
+  OVERDUE: 'text-[#EF4444]',
+};
+
+function stateLabel(state: TaskState): string {
+  return TASK_STATE_LABELS[state] ?? state;
 }
 
-function stateBadgeClass(state: TaskState): string {
-  const map: Record<TaskState, string> = {
-    TODO: 'border-[#1B2433] bg-[#101623] text-[#94A3B8]',
-    IN_PROGRESS: 'border-[#38BDF8]/40 bg-[#38BDF8]/10 text-[#38BDF8]',
-    COMPLETED: 'border-[#22C55E]/40 bg-[#22C55E]/10 text-[#22C55E]',
-    SKIPPED: 'border-[#1B2433] bg-[#101623] text-[#64748B]',
-    OVERDUE: 'border-[#EF4444]/40 bg-[#EF4444]/10 text-[#EF4444]',
-  };
-  return map[state] || 'border-[#1B2433] text-[#94A3B8]';
+function statusLabel(status: TaskStatusFilter): string {
+  return status === 'ALL' ? 'All' : stateLabel(status);
+}
+
+function stateTextClass(state: TaskState): string {
+  return TASK_STATE_TEXT_CLASSES[state] ?? 'text-[#94A3B8]';
 }
 
 function stateDotClass(state: TaskState): string {
   const map: Record<TaskState, string> = {
     TODO: 'bg-[#64748B]',
-    IN_PROGRESS: 'bg-[#38BDF8] animate-pulse',
+    IN_PROGRESS: 'bg-[#38BDF8]',
     COMPLETED: 'bg-[#22C55E]',
     SKIPPED: 'bg-[#64748B]',
     OVERDUE: 'bg-[#EF4444]',
@@ -166,21 +168,22 @@ function handleCreateTask(): void {
       </template>
     </PageHeader>
 
-    <!-- Task Status Filter Buttons -->
-    <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter tasks by status">
+    <!-- Task status filter: one quiet segmented row, human labels -->
+    <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter tasks by status">
       <button
         v-for="status in filterStatuses"
         :key="status"
         type="button"
+        :aria-pressed="statusFilter === status"
         :class="[
-          'px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-colors cursor-pointer',
+          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
           statusFilter === status
-            ? 'bg-[#38BDF8] text-[#0A0E17] font-semibold'
-            : 'bg-[#101623] text-[#94A3B8] hover:text-[#F1F5F9] border border-[#1B2433]'
+            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
         ]"
         @click="statusFilter = status"
       >
-        {{ status }}
+        {{ statusLabel(status) }}
       </button>
     </div>
 
@@ -198,47 +201,41 @@ function handleCreateTask(): void {
         v-for="task in filteredTasks"
         :key="task.id"
         :class="[
-          'ui-panel p-4 transition-all duration-150 rounded-lg',
-          task.state === 'COMPLETED' ? 'border-[#22C55E]/30 opacity-80' : 'border-[#1B2433]',
-          task.state === 'IN_PROGRESS' ? 'border-[#38BDF8]/50 shadow-md shadow-[#38BDF8]/5' : ''
+          'ui-panel p-4 transition-colors duration-150 rounded-lg',
+          task.state === 'IN_PROGRESS' ? 'border-[#38BDF8]/40' : 'border-[#1B2433]',
         ]"
       >
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="flex items-start gap-3 flex-1">
+          <div class="flex items-start gap-3 flex-1 min-w-0">
             <button
               type="button"
               @click="handleCompleteTask(task.id)"
               :title="task.state === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Complete'"
               :aria-label="task.state === 'COMPLETED' ? 'Mark Incomplete' : 'Mark Complete'"
+              :aria-pressed="task.state === 'COMPLETED'"
               class="w-5 h-5 mt-0.5 rounded border flex items-center justify-center transition-colors cursor-pointer shrink-0"
               :class="task.state === 'COMPLETED' ? 'bg-[#22C55E] border-[#22C55E] text-[#0A0E17]' : 'border-[#334155] hover:border-[#38BDF8] text-transparent'"
             >
               <Check class="w-3.5 h-3.5 stroke-[3]" />
             </button>
             <div class="flex-1 min-w-0">
-              <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                <span
-                  class="inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-mono font-semibold"
-                  :class="categoryBadgeClass(task.category)"
-                >
-                  {{ task.category }}
+              <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1.5 text-[10px] font-mono">
+                <span class="text-[#94A3B8]">{{ task.category }}</span>
+                <span class="text-[#334155]" aria-hidden="true">·</span>
+                <span class="inline-flex items-center gap-1.5" :class="stateTextClass(task.state)">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="stateDotClass(task.state)" />
+                  {{ stateLabel(task.state) }}
                 </span>
-                <span
-                  class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-mono font-medium"
-                  :class="stateBadgeClass(task.state)"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="stateDotClass(task.state)"></span>
-                  {{ task.state }}
-                </span>
-                <span class="text-[11px] font-mono text-[#64748B] flex items-center gap-1">
-                  <Clock class="w-3 h-3" />{{ task.estimatedMinutes }} min
+                <span class="text-[#334155]" aria-hidden="true">·</span>
+                <span class="text-[#64748B] flex items-center gap-1">
+                  <Clock class="w-3 h-3" aria-hidden="true" />{{ task.estimatedMinutes }} min
                 </span>
               </div>
 
               <h3 :class="['text-sm font-semibold', task.state === 'COMPLETED' ? 'line-through text-[#94A3B8]' : 'text-[#F1F5F9]']">
                 {{ task.title }}
               </h3>
-              <p class="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+              <p v-if="task.description" class="text-xs text-[#94A3B8] mt-1 leading-relaxed">
                 {{ task.description }}
               </p>
             </div>

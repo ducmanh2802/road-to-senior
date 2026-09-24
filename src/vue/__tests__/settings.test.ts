@@ -12,12 +12,12 @@ describe('SettingsPage.vue', () => {
     store.resetToDemo();
   });
 
-  it('renders correctly with header and cards', () => {
+  it('renders correctly with header and sections', () => {
     const wrapper = mount(SettingsPage);
-    expect(wrapper.text()).toContain('Settings & Local Storage Engine');
-    expect(wrapper.text()).toContain('Active Day Override');
-    expect(wrapper.text()).toContain('Data Backup & State Migration');
-    expect(wrapper.text()).toContain('Factory Demo Reset');
+    expect(wrapper.text()).toContain('Settings');
+    expect(wrapper.text()).toContain('Active day');
+    expect(wrapper.text()).toContain('Backup & restore');
+    expect(wrapper.text()).toContain('Reset to starter state');
   });
 
   it('updates the active day when form is submitted', async () => {

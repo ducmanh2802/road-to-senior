@@ -46,7 +46,7 @@ describe('TodayViewPage.vue', () => {
     // click filter button for IN_PROGRESS
     const filterBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'IN_PROGRESS');
+      .find((btn) => btn.text().trim() === 'In progress');
     expect(filterBtn).toBeDefined();
     await filterBtn!.trigger('click');
     await wrapper.vm.$nextTick();
@@ -57,7 +57,7 @@ describe('TodayViewPage.vue', () => {
     // click filter button for TODO
     const todoBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'TODO');
+      .find((btn) => btn.text().trim() === 'To do');
     expect(todoBtn).toBeDefined();
     await todoBtn!.trigger('click');
     await wrapper.vm.$nextTick();
@@ -73,7 +73,7 @@ describe('TodayViewPage.vue', () => {
     // filter by SKIPPED where no tasks exist yet
     const skippedBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'SKIPPED');
+      .find((btn) => btn.text().trim() === 'Skipped');
     expect(skippedBtn).toBeDefined();
     await skippedBtn!.trigger('click');
     await wrapper.vm.$nextTick();
@@ -172,10 +172,15 @@ describe('TodayViewPage.vue', () => {
       'IN_PROGRESS'
     );
 
-    // Click Complete button for the IN_PROGRESS task
-    const completeBtn = wrapper
+    // Click Complete button for the IN_PROGRESS task (scoped to its row, so
+    // the "Completed" status filter button cannot shadow it)
+    const inProgressRow = wrapper
+      .findAll('.ui-panel')
+      .find((el) => el.text().includes('Sample Task 2'));
+    expect(inProgressRow).toBeDefined();
+    const completeBtn = inProgressRow!
       .findAll('button')
-      .find(btn => btn.text().includes('Complete'));
+      .find((btn) => btn.text().includes('Complete'));
     expect(completeBtn).toBeDefined();
     await completeBtn!.trigger('click');
 

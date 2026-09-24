@@ -33,8 +33,8 @@ describe('CommandCenterPage (Vue 3 Vertical Slice)', () => {
 
     await wrapper.vm.$nextTick();
 
-    // 5-Second System Status
-    expect(wrapper.text()).toContain('5-SECOND SYSTEM STATUS');
+    // Command Center hero (orientation + single next action)
+    expect(wrapper.text()).toContain('Recommended action');
     expect(wrapper.text()).toContain('DAY 37');
     expect(wrapper.text()).toContain('Days Remaining');
 

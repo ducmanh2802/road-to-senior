@@ -254,37 +254,20 @@ function handleSetCurrentDay(dayNumber: number): void {
               </div>
 
               <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#151B28] text-[#94A3B8] border border-[#1E293B]">
-                    DAY {{ String(day.dayNumber).padStart(2, '0') }}
-                  </span>
-                  <span class="text-[11px] font-mono text-[#38BDF8] font-medium truncate">
-                    {{ day.phaseName }}
-                  </span>
-                  <span
-                    v-if="day.dayNumber === store.currentDay"
-                    class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30"
-                  >
-                    ACTIVE
-                  </span>
-                  <span
-                    v-if="day.completed"
-                    class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30"
-                  >
-                    VERIFIED
-                  </span>
+                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1.5 text-[10px] font-mono text-[#64748B]">
+                  <span>DAY {{ String(day.dayNumber).padStart(2, '0') }}</span>
+                  <span class="text-[#334155]" aria-hidden="true">·</span>
+                  <span class="truncate">{{ day.phaseName }}</span>
+                  <span v-if="day.dayNumber === store.currentDay" class="text-[#38BDF8]">Current</span>
+                  <span v-else-if="day.completed" class="text-[#22C55E]">Completed</span>
                 </div>
 
-                <h3 class="text-sm font-semibold text-[#F8FAFC] leading-snug">
+                <h3 class="text-sm font-semibold text-[#F1F5F9] leading-snug">
                   {{ day.theme }}
                 </h3>
 
-                <div class="flex flex-wrap gap-1.5 mt-2.5">
-                  <span
-                    v-for="(concept, idx) in day.coreConcepts"
-                    :key="idx"
-                    class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#151B28] text-[#94A3B8] border border-[#1E293B]"
-                  >
+                <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-[#64748B]">
+                  <span v-for="(concept, idx) in day.coreConcepts" :key="idx">
                     {{ concept }}
                   </span>
                 </div>

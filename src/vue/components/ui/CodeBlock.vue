@@ -30,21 +30,27 @@ const languageLabel = computed(() => (props.language || 'java').toUpperCase());
 const lines = computed(() => props.code.trim().split('\n'));
 
 async function handleCopy(): Promise<void> {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+  // Clipboard API available?
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
       await navigator.clipboard.writeText(props.code);
       copied.value = true;
       if (copyTimeout) clearTimeout(copyTimeout);
       copyTimeout = setTimeout(() => {
         copied.value = false;
       }, 2000);
+    } catch (e) {
+      console.error('Clipboard write failed', e);
+      console.warn('Clipboard operation failed, fallback to no copy');
+      copied.value = false;
     }
-  } catch {
-    // Clipboard unavailable (permissions / insecure context): leave the button
-    // in its idle state instead of showing a false success confirmation.
+  } else {
+    // Clipboard API not available
+    console.warn('Clipboard API not available');
     copied.value = false;
   }
 }
+
 
 onBeforeUnmount(() => {
   if (copyTimeout) clearTimeout(copyTimeout);

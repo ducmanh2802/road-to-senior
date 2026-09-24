@@ -14,6 +14,7 @@ import type {
   IncidentScenario,
   InterviewQuestion,
   CompetencyReadiness,
+  TaskCategory,
 } from '../../types';
 import { calculateSm2Review } from '../../engines/sm2';
 import {
@@ -39,6 +40,12 @@ export interface NextActionInfo {
 }
 
 export const useLearningStore = defineStore('learning', () => {
+const completedAiTopicIds = ref<string[]>([]);
+const completedEnglishItemIds = ref<string[]>([]);
+const completedJavaModuleIds = ref<string[]>([]);
+
+const javaModuleStageProgress = ref<Record<string, string[]>>({});
+const javaModuleAssessmentScores = ref<Record<string, number>>({});
   const currentDay = ref<number>(37);
   const streak = ref<number>(14);
   const studyTimeMinutes = ref<number>(142);
@@ -51,14 +58,6 @@ export const useLearningStore = defineStore('learning', () => {
   const projectFeatures = ref<ProjectFeature[]>([]);
   const incidents = ref<IncidentScenario[]>([]);
   const interviewQuestions = ref<InterviewQuestion[]>([...INITIAL_INTERVIEW_QUESTIONS]);
-  const completedAiTopicIds = ref<string[]>([]);
-  const completedEnglishItemIds = ref<string[]>([]);
-  // P0 Java Core Tracking: completed module IDs (only when assessment >= 80% and failure lab completed)
-  const completedJavaModuleIds = ref<string[]>([]);
-  // Record completed stages per module (e.g., '1.1': ['learn', 'build', 'break', 'observe', 'debug', 'fix', 'benchmark', 'design', 'explain', 'defend', 'assess'])
-  const javaModuleStageProgress = ref<Record<string, string[]>>({});
-  // Module assessment scores
-  const javaModuleAssessmentScores = ref<Record<string, number>>({});
 
   const status = ref<'loading' | 'error' | 'empty' | 'success'>('loading');
   const errorMessage = ref<string | null>(null);
@@ -78,11 +77,6 @@ export const useLearningStore = defineStore('learning', () => {
         projectFeatures: projectFeatures.value,
         incidents: incidents.value,
         interviewQuestions: interviewQuestions.value,
-        completedAiTopicIds: completedAiTopicIds.value,
-        completedEnglishItemIds: completedEnglishItemIds.value,
-        completedJavaModuleIds: completedJavaModuleIds.value,
-        javaModuleStageProgress: javaModuleStageProgress.value,
-        javaModuleAssessmentScores: javaModuleAssessmentScores.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -102,11 +96,6 @@ export const useLearningStore = defineStore('learning', () => {
     projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
     incidents.value = [...INITIAL_INCIDENTS];
     interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
-    completedAiTopicIds.value = [];
-    completedEnglishItemIds.value = [];
-    completedJavaModuleIds.value = [];
-    javaModuleStageProgress.value = {};
-    javaModuleAssessmentScores.value = {};
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
@@ -135,11 +124,6 @@ export const useLearningStore = defineStore('learning', () => {
         interviewQuestions.value = Array.isArray(parsed.interviewQuestions)
           ? parsed.interviewQuestions
           : [...INITIAL_INTERVIEW_QUESTIONS];
-        completedAiTopicIds.value = Array.isArray(parsed.completedAiTopicIds) ? parsed.completedAiTopicIds : [];
-        completedEnglishItemIds.value = Array.isArray(parsed.completedEnglishItemIds) ? parsed.completedEnglishItemIds : [];
-        completedJavaModuleIds.value = Array.isArray(parsed.completedJavaModuleIds) ? parsed.completedJavaModuleIds : [];
-        javaModuleStageProgress.value = (parsed.javaModuleStageProgress && typeof parsed.javaModuleStageProgress === 'object') ? parsed.javaModuleStageProgress : {};
-        javaModuleAssessmentScores.value = (parsed.javaModuleAssessmentScores && typeof parsed.javaModuleAssessmentScores === 'object') ? parsed.javaModuleAssessmentScores : {};
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -153,11 +137,6 @@ export const useLearningStore = defineStore('learning', () => {
         projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
         incidents.value = [...INITIAL_INCIDENTS];
         interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
-        completedAiTopicIds.value = [];
-        completedEnglishItemIds.value = [];
-        completedJavaModuleIds.value = [];
-        javaModuleStageProgress.value = {};
-        javaModuleAssessmentScores.value = {};
         saveToStorage();
       }
 
@@ -181,39 +160,11 @@ export const useLearningStore = defineStore('learning', () => {
   /**
    * Create a task for the current roadmap day. New tasks start in TODO state;
    * `state`/`id`/`dayNumber` are owned by the store, not the caller.
-   */
-  function addTask(
-    task: Pick<LearningTask, 'title' | 'description' | 'category' | 'estimatedMinutes'> &
-      Partial<Pick<LearningTask, 'dayNumber' | 'state' | 'notes' | 'codeSnippet' | 'externalLink'>>
-  ): LearningTask {
-    const newTask: LearningTask = {
-      ...task,
-      id: 'task-' + Date.now(),
-      dayNumber: task.dayNumber ?? currentDay.value,
-      state: task.state ?? 'TODO',
-    };
-    tasks.value = [newTask, ...tasks.value];
-    saveToStorage();
-    return newTask;
-  }
 
-  function setTaskState(taskId: string, state: TaskState): void {
-    tasks.value = tasks.value.map(t => {
-      if (t.id !== taskId) return t;
-      const isNowCompleted = state === 'COMPLETED';
-      return {
-        ...t,
-        state,
-        completedAt: isNowCompleted ? new Date().toISOString() : undefined,
-      };
-    });
-    saveToStorage();
-  }
+  
 
-  function updateTaskNotes(taskId: string, notes: string): void {
-    tasks.value = tasks.value.map(t => (t.id === taskId ? { ...t, notes } : t));
-    saveToStorage();
-  }
+
+  
 
   /**
    * Record a graded review: applies the deterministic SM-2 engine
@@ -360,6 +311,57 @@ export const useLearningStore = defineStore('learning', () => {
       actionLabel: 'Launch System Design',
     };
   });
+
+  function setTaskState(taskId: string, state: TaskState): void {
+    tasks.value = tasks.value.map((t) => {
+      if (t.id === taskId) {
+        const isNowCompleted = state === 'COMPLETED';
+        return {
+          ...t,
+          state,
+          completedAt: isNowCompleted ? new Date().toISOString() : undefined,
+        };
+      }
+      return t;
+    });
+    saveToStorage();
+  }
+
+  function addTask(taskData: {
+    title: string;
+    description?: string;
+    category?: TaskCategory;
+    estimatedMinutes?: number;
+    state?: TaskState;
+    dayNumber?: number;
+    notes?: string;
+    codeSnippet?: string;
+    externalLink?: string;
+  }): LearningTask {
+    const newTask: LearningTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      dayNumber: taskData.dayNumber ?? currentDay.value,
+      title: taskData.title,
+      category: taskData.category ?? 'HANDS_ON',
+      description: taskData.description ?? '',
+      estimatedMinutes: taskData.estimatedMinutes ?? 30,
+      state: taskData.state ?? 'TODO',
+      notes: taskData.notes,
+      codeSnippet: taskData.codeSnippet,
+      externalLink: taskData.externalLink,
+    };
+    tasks.value = [newTask, ...tasks.value];
+    saveToStorage();
+    return newTask;
+  }
+
+  function updateTaskNotes(taskId: string, notes: string): void {
+    tasks.value = tasks.value.map((t) => (t.id === taskId ? { ...t, notes } : t));
+    saveToStorage();
+  }
+
+
+
 
   function setCurrentDay(day: number): void {
     if (day >= 1 && day <= 180) {
@@ -544,12 +546,12 @@ export const useLearningStore = defineStore('learning', () => {
     errorDetail,
     loadFromStorage,
     resetToDemo,
-    saveToStorage,
-    setCurrentDay,
     exportDataAsJson,
     importDataFromJson,
+    saveToStorage,
     addTask,
     setTaskState,
+    setCurrentDay,
     updateTaskNotes,
     recordReviewAnswer,
     createReviewCardFromMistake,

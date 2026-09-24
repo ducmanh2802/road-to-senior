@@ -80,10 +80,11 @@
           class="w-full"
           @click="handleReveal"
         >
-          Reveal model answer
+          Reveal Model Answer
         </Button>
 
         <div v-else class="space-y-5 pt-4 border-t border-[#1B2433]">
+  <div class="text-sm font-medium text-[#F1F5F9] text-center mb-2">ACTIVE RECALL PROMPT</div>
           <div class="space-y-2">
             <div class="flex items-center gap-2 text-[11px] font-mono text-[#22C55E] uppercase tracking-wider">
               <CheckCircle2 class="w-3.5 h-3.5" aria-hidden="true" />

@@ -1,17 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createRouter, createMemoryHistory } from 'vue-router';
 import ReviewPage from '../pages/ReviewPage.vue';
-import { routes } from '../router';
 import { setActivePinia, createPinia } from 'pinia';
 import { useLearningStore } from '../stores/learning';
 import type { ReviewCard } from '../../types';
-
-/** ReviewPage navigates from its empty state, so it needs a router injected. */
-function mountReview() {
-  const router = createRouter({ history: createMemoryHistory(), routes });
-  return mount(ReviewPage, { global: { plugins: [router] } });
-}
 
 /**
  * Test fixture: deterministic review cards (NOT real user data).
@@ -40,17 +32,17 @@ describe('ReviewPage.vue', () => {
   it('shows the honest empty state when there are no review cards', () => {
     const store = useLearningStore();
     store.reviewCards = [];
-    const wrapper = mountReview();
+    const wrapper = mount(ReviewPage);
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
   });
 
-  it('renders the current due card with its prompt', () => {
+  it('renders the current due card with active recall prompt', () => {
     const store = useLearningStore();
     store.reviewCards = [makeCard({ id: 'card-1' })];
-    const wrapper = mountReview();
-    expect(wrapper.find('h2').text()).toContain('Why does synchronized pin virtual threads?');
-    expect(wrapper.text()).toContain('Prompt');
-    expect(wrapper.text()).toContain('1 card due');
+    const wrapper = mount(ReviewPage);
+    expect(wrapper.text()).toContain('Why does synchronized pin virtual threads?');
+    expect(wrapper.text()).toContain('ACTIVE RECALL PROMPT');
+    expect(wrapper.text()).toContain('1 Cards Due Today');
   });
 
   it('reveals the model answer and grades via SM-2', async () => {
@@ -64,14 +56,14 @@ describe('ReviewPage.vue', () => {
         nextReviewAt: new Date(Date.now() + 86400000).toISOString(),
       }),
     ];
-    const wrapper = mountReview();
+    const wrapper = mount(ReviewPage);
 
     const revealBtn = wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Reveal model answer'))[0];
+      .filter(b => b.text().includes('Reveal Model Answer'))[0];
     expect(revealBtn).toBeDefined();
     await revealBtn.trigger('click');
-    expect(wrapper.text()).toContain('Model answer');
+    expect(wrapper.text()).toContain('IDEAL SENIOR ARCHITECTURAL ANSWER');
 
     // grade GOOD → SM-2: rep 0 → interval 1, reps 1
     await wrapper.find('[data-testid="grade-good"]').trigger('click');
@@ -89,16 +81,16 @@ describe('ReviewPage.vue', () => {
   it('finishes the deck and offers to practice again', async () => {
     const store = useLearningStore();
     store.reviewCards = [makeCard({ id: 'card-1' })];
-    const wrapper = mountReview();
+    const wrapper = mount(ReviewPage);
 
     await wrapper
       .findAll('button')
-      .filter(b => b.text().includes('Reveal model answer'))[0]
+      .filter(b => b.text().includes('Reveal Model Answer'))[0]
       .trigger('click');
     await wrapper.find('[data-testid="grade-again"]').trigger('click');
 
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('Review session complete');
+    expect(wrapper.text()).toContain('Daily Spaced Review Complete!');
 
     // SM-2 AGAIN: reps reset to 0, ease decreases
     const graded = store.reviewCards.find(c => c.id === 'card-1');
@@ -109,7 +101,7 @@ describe('ReviewPage.vue', () => {
     // restart session
     const againBtn = wrapper
       .findAll('button')
-      .filter(b => b.text() === 'Practice deck again')[0];
+      .filter(b => b.text() === 'Practice Deck Again')[0];
     await againBtn.trigger('click');
     expect(wrapper.text()).toContain('Why does synchronized pin virtual threads?');
   });

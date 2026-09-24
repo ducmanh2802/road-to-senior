@@ -6,13 +6,8 @@ Current frontend: Vue 3 (hard-cutover foundation, entry = src/vue/main.ts);
   React source retained as migration reference only
 Target frontend: Vue 3 + TypeScript + Vue Router + Pinia
 Backend: none (target: Java 25 / Spring Boot 4.1.x — NOT started)
-Current phase: Phase P0-1.3 completed — Pattern Matching & Switch
+Current phase: Phase P0-1.2 completed — Sealed Classes & Exhaustive Pattern Matching
 Completed phases:
-  - Phase P0-1.3 — Pattern Matching & Switch: LearningJavaPage.vue (/learning/java),
-    src/data/javaCoreCurriculum.ts (Module 1.3 full 11-stage engineering loop, record deconstruction,
-    nested type patterns, guarded when clauses, dominance ordering, explicit null handling,
-    TransactionEventDispatcher, JavaFailureLab null/dominance simulator, 11-question assessment),
-    164/164 unit tests PASS.
   - Phase P0-1.2 — Sealed Classes & Exhaustive Pattern Matching: LearningJavaPage.vue (/learning/java),
     src/data/javaCoreCurriculum.ts (Module 1.2 full 11-stage engineering loop, algebraic sum types,
     PaymentResult domain, JavaFailureLab variant fall-through simulator, 11-question assessment),

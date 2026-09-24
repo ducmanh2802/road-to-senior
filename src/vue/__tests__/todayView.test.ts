@@ -4,6 +4,11 @@ import TodayViewPage from '../pages/TodayViewPage.vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useLearningStore } from '../stores/learning';
 
+/** Teleport is stubbed so dialog content stays inside the wrapper under test. */
+function mountToday() {
+  return mount(TodayViewPage, { global: { stubs: { teleport: true } } });
+}
+
 describe('TodayViewPage.vue', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -33,7 +38,7 @@ describe('TodayViewPage.vue', () => {
   });
 
   it('renders and shows tasks', () => {
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     expect(wrapper.text()).toContain('Sample Task 1');
     expect(wrapper.text()).toContain('Sample Task 2');
     expect(wrapper.text()).toContain("Today's Engineering Execution");
@@ -63,7 +68,7 @@ describe('TodayViewPage.vue', () => {
   });
 
   it('renders empty state when no tasks match filter and allows reset', async () => {
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     await wrapper.vm.$nextTick();
 
     // filter by SKIPPED where no tasks exist yet
@@ -89,7 +94,7 @@ describe('TodayViewPage.vue', () => {
   });
 
   it('handles task interaction - completes and toggles task state', async () => {
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     await wrapper.vm.$nextTick();
     const store = useLearningStore();
 
@@ -112,7 +117,7 @@ describe('TodayViewPage.vue', () => {
   });
 
   it('adds task through store and renders in list', async () => {
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     await wrapper.vm.$nextTick();
     const store = useLearningStore();
 
@@ -129,19 +134,19 @@ describe('TodayViewPage.vue', () => {
   });
 
   it('opens create task modal and submits new task', async () => {
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     await wrapper.vm.$nextTick();
     const store = useLearningStore();
 
     // Click "+ Create Task" button
     const createBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().includes('Create Task'));
+      .find((btn) => btn.text().includes('Create task'));
     expect(createBtn).toBeDefined();
     await createBtn!.trigger('click');
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain('Create New Task');
+    expect(wrapper.text()).toContain('Estimated minutes');
 
     // Fill form
     const titleInput = wrapper.find('input[placeholder*="Kafka"]');
@@ -180,7 +185,7 @@ describe('TodayViewPage.vue', () => {
 
   it('completes a task and reflects the state change in the store', async () => {
     const store = useLearningStore();
-    const wrapper = mount(TodayViewPage);
+    const wrapper = mountToday();
     expect(store.tasks.find(t => t.id === 'test-task-2')?.state).toBe(
       'IN_PROGRESS'
     );

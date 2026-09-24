@@ -57,9 +57,17 @@ const allCategories: TaskCategory[] = [
   'REVIEW',
 ];
 
+const categoryFilter = ref<'ALL' | TaskCategory>('ALL');
+
 const filteredTasks = computed<LearningTask[]>(() => {
-  if (statusFilter.value === 'ALL') return store.tasks;
-  return store.tasks.filter((t) => t.state === statusFilter.value);
+  let result = store.tasks;
+  if (statusFilter.value !== 'ALL') {
+    result = result.filter(t => t.state === statusFilter.value);
+  }
+  if (categoryFilter.value !== 'ALL') {
+    result = result.filter(t => t.category === categoryFilter.value);
+  }
+  return result;
 });
 
 const TASK_STATE_LABELS: Record<TaskState, string> = {
@@ -183,7 +191,69 @@ function handleCreateTask(): void {
         ]"
         @click="statusFilter = status"
       >
-        {{ statusLabel(status) }}
+        {{ status }}
+      </button>
+      </div>
+      <!-- Category filter buttons -->
+      <div class="flex flex-wrap items-center gap-1.5 mt-2" role="group" aria-label="Filter tasks by category">
+        <button
+          v-for="cat in allCategories"
+          :key="cat"
+          type="button"
+          :aria-pressed="categoryFilter === cat"
+          :class="[
+            'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
+            categoryFilter === cat
+              ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+              : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
+          ]"
+          @click="categoryFilter = cat"
+        >
+          {{ cat }}
+        </button>
+        <button
+          type="button"
+          :aria-pressed="categoryFilter === 'ALL'"
+          :class="[
+            'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
+            categoryFilter === 'ALL'
+              ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+              : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
+          ]"
+          @click="categoryFilter = 'ALL'"
+        >
+          All
+        </button>
+      </div>
+    <!-- Category filter buttons -->
+    <div class="flex flex-wrap items-center gap-1.5 mt-2" role="group" aria-label="Filter tasks by category">
+      <button
+        v-for="cat in allCategories"
+        :key="cat"
+        type="button"
+        :aria-pressed="categoryFilter === cat"
+        :class="[
+          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
+          categoryFilter === cat
+            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
+        ]"
+        @click="categoryFilter = cat"
+      >
+        {{ cat }}
+      </button>
+      <button
+        type="button"
+        :aria-pressed="categoryFilter === 'ALL'"
+        :class="[
+          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
+          categoryFilter === 'ALL'
+            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
+        ]"
+        @click="categoryFilter = 'ALL'"
+      >
+        All
       </button>
     </div>
 

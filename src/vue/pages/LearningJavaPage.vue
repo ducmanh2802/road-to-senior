@@ -26,7 +26,7 @@ import {
   Terminal,
 } from 'lucide-vue-next';
 import PageHeader from '../components/PageHeader.vue';
-import CodeBlock from '../components/CodeBlock.vue';
+import CodeBlock from '../components/ui/CodeBlock.vue';
 import ProgressBar from '../components/ProgressBar.vue';
 import JavaCoreAssessment from '../components/JavaCoreAssessment.vue';
 import JavaFailureLab from '../components/JavaFailureLab.vue';
@@ -173,7 +173,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
     <section class="flex items-center gap-2 overflow-x-auto pb-1" aria-label="Curriculum Pillars">
       <button
         type="button"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border transition-all cursor-pointer"
+        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border ui-transition cursor-pointer"
         :class="selectedPillar === 'all' ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 text-[#38BDF8] font-bold' : 'border-transparent text-[#94A3B8] hover:text-[#F8FAFC]'"
         data-testid="pillar-tab-all"
         @click="selectedPillar = 'all'"
@@ -182,7 +182,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
       </button>
       <button
         type="button"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border transition-all cursor-pointer"
+        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border ui-transition cursor-pointer"
         :class="selectedPillar === 'language' ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 text-[#38BDF8] font-bold' : 'border-transparent text-[#94A3B8] hover:text-[#F8FAFC]'"
         data-testid="pillar-tab-language"
         @click="selectedPillar = 'language'"
@@ -191,7 +191,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
       </button>
       <button
         type="button"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border transition-all cursor-pointer"
+        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border ui-transition cursor-pointer"
         :class="selectedPillar === 'jvm' ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 text-[#38BDF8] font-bold' : 'border-transparent text-[#94A3B8] hover:text-[#F8FAFC]'"
         data-testid="pillar-tab-jvm"
         @click="selectedPillar = 'jvm'"
@@ -200,7 +200,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
       </button>
       <button
         type="button"
-        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border transition-all cursor-pointer"
+        class="px-3.5 py-1.5 rounded-lg text-xs font-mono border ui-transition cursor-pointer"
         :class="selectedPillar === 'concurrency' ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 text-[#38BDF8] font-bold' : 'border-transparent text-[#94A3B8] hover:text-[#F8FAFC]'"
         data-testid="pillar-tab-concurrency"
         @click="selectedPillar = 'concurrency'"
@@ -226,7 +226,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
           role="tab"
           :aria-selected="selectedModuleId === mod.id"
           :disabled="mod.status === 'LOCKED'"
-          class="px-3 py-1.5 rounded-md transition-all whitespace-nowrap text-xs font-mono border flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          class="px-3 py-1.5 rounded-md ui-transition whitespace-nowrap text-xs font-mono border flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           :class="[
             selectedModuleId === mod.id
               ? 'bg-[#151D2C] text-[#38BDF8] border-[#38BDF8]/40 font-semibold'

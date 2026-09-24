@@ -56,7 +56,7 @@ const variantClasses = {
       :aria-label="label || 'Progress'"
     >
       <div
-        class="h-full rounded-full transition-all duration-300 ease-out"
+        class="h-full rounded-full transition-[width] duration-200 ease-out motion-reduce:transition-none"
         :class="variantClasses[variant]"
         :style="{ width: `${percentage}%` }"
       />

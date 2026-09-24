@@ -115,7 +115,7 @@
                 type="button"
                 :data-testid="`grade-${option.grade.toLowerCase()}`"
                 :aria-label="`Grade ${option.grade}, next review in ${option.interval}`"
-                class="px-3 py-2.5 rounded-md border border-[#1B2433] bg-[#0A0E17] text-center transition-colors duration-150 cursor-pointer hover:border-[#334155] hover:bg-[#151D2C] focus-ring"
+                class="px-3 py-2.5 rounded-md border border-[#1B2433] bg-[#0A0E17] text-center ui-transition cursor-pointer hover:border-[#334155] hover:bg-[#151D2C] focus-ring"
                 @click="handleGrade(option.grade)"
               >
                 <span class="block text-xs font-semibold" :class="option.textClass">

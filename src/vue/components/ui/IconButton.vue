@@ -22,7 +22,7 @@ const props = withDefaults(
 defineEmits<{ click: [event: MouseEvent] }>();
 
 const baseClasses =
-  'inline-flex items-center justify-center rounded transition-all duration-150 focus-ring select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  'inline-flex items-center justify-center rounded ui-transition focus-ring select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
 const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
   sm: 'w-7 h-7 p-1',
@@ -37,12 +37,13 @@ const iconSizes: Record<'sm' | 'md' | 'lg', string> = {
 };
 
 const variantClasses: Record<'primary' | 'secondary' | 'ghost' | 'danger' | 'outline', string> = {
-  primary: 'bg-[#38BDF8] text-[#0B0E14] hover:bg-[#0EA5E9]',
-  secondary: 'bg-[#151B28] hover:bg-[#1E293B] text-[#F8FAFC] border border-[#1E293B]',
-  ghost: 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E293B]/60',
+  primary: 'bg-[#38BDF8] text-[#0A0E17] hover:bg-[#0284C7] active:bg-[#0369A1]',
+  secondary:
+    'bg-[#151D2C] hover:bg-[#1A2436] active:bg-[#101623] text-[#F1F5F9] border border-[#1B2433] hover:border-[#334155]',
+  ghost: 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] active:bg-[#101623]',
   outline:
-    'bg-transparent text-[#94A3B8] hover:text-[#38BDF8] border border-[#1E293B] hover:border-[#38BDF8]/40 hover:bg-[#38BDF8]/5',
-  danger: 'bg-[#EF4444] text-white hover:bg-[#DC2626]',
+    'bg-transparent text-[#94A3B8] hover:text-[#38BDF8] border border-[#1B2433] hover:border-[#38BDF8]/40 hover:bg-[#38BDF8]/5 active:bg-[#38BDF8]/10',
+  danger: 'bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#B91C1C]',
 };
 
 const classes = computed(
@@ -56,10 +57,11 @@ const classes = computed(
     :aria-label="label"
     :title="label"
     :disabled="disabled || isLoading"
+    :aria-busy="isLoading || undefined"
     :class="classes"
     @click="$emit('click', $event)"
   >
-    <Loader2 v-if="isLoading" :class="`${iconSizes[size]} animate-spin`" />
+    <Loader2 v-if="isLoading" :class="`${iconSizes[size]} animate-spin motion-reduce:animate-none`" />
     <component :is="icon" v-else :class="iconSizes[size]" aria-hidden="true" />
   </button>
 </template>

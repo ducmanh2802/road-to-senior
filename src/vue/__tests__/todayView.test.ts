@@ -41,23 +41,19 @@ describe('TodayViewPage.vue', () => {
 
   it('filters tasks by status', async () => {
     const wrapper = mount(TodayViewPage);
-    await wrapper.vm.$nextTick();
-
-    // click filter button for IN_PROGRESS
+    // click filter button for DSA
     const filterBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'In progress');
+      .filter(btn => btn.text() === 'DSA')[0];
     expect(filterBtn).toBeDefined();
-    await filterBtn!.trigger('click');
-    await wrapper.vm.$nextTick();
-
+    await filterBtn.trigger('click');
     expect(wrapper.text()).toContain('Sample Task 2');
     expect(wrapper.text()).not.toContain('Sample Task 1');
 
     // click filter button for TODO
     const todoBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'To do');
+      .find((btn) => btn.text().trim() === 'TODO');
     expect(todoBtn).toBeDefined();
     await todoBtn!.trigger('click');
     await wrapper.vm.$nextTick();
@@ -73,7 +69,7 @@ describe('TodayViewPage.vue', () => {
     // filter by SKIPPED where no tasks exist yet
     const skippedBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().trim() === 'Skipped');
+      .find((btn) => btn.text().trim() === 'SKIPPED');
     expect(skippedBtn).toBeDefined();
     await skippedBtn!.trigger('click');
     await wrapper.vm.$nextTick();
@@ -165,6 +161,23 @@ describe('TodayViewPage.vue', () => {
     expect(created?.state).toBe('TODO');
   });
 
+  it('shows the honest empty state when no tasks match the filter', async () => {
+    const wrapper = mount(TodayViewPage);
+    const filterBtn = wrapper
+      .findAll('button')
+      .filter(btn => btn.text() === 'ENGLISH')[0];
+    expect(filterBtn).toBeDefined();
+    await filterBtn.trigger('click');
+    expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
+
+    // reset filter restores the list
+    const resetBtn = wrapper
+      .findAll('button')
+      .filter(btn => btn.text() === 'Reset Filter')[0];
+    await resetBtn.trigger('click');
+    expect(wrapper.text()).toContain('Sample Task 1');
+  });
+
   it('completes a task and reflects the state change in the store', async () => {
     const store = useLearningStore();
     const wrapper = mount(TodayViewPage);
@@ -172,17 +185,12 @@ describe('TodayViewPage.vue', () => {
       'IN_PROGRESS'
     );
 
-    // Click Complete button for the IN_PROGRESS task (scoped to its row, so
-    // the "Completed" status filter button cannot shadow it)
-    const inProgressRow = wrapper
-      .findAll('.ui-panel')
-      .find((el) => el.text().includes('Sample Task 2'));
-    expect(inProgressRow).toBeDefined();
-    const completeBtn = inProgressRow!
+    // the only visible Complete button belongs to the IN_PROGRESS task
+    const completeBtn = wrapper
       .findAll('button')
-      .find((btn) => btn.text().includes('Complete'));
+      .filter(btn => btn.text() === 'Complete')[0];
     expect(completeBtn).toBeDefined();
-    await completeBtn!.trigger('click');
+    await completeBtn.trigger('click');
 
     expect(store.tasks.find(t => t.id === 'test-task-2')?.state).toBe(
       'COMPLETED'

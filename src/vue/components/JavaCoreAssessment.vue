@@ -141,7 +141,7 @@ defineExpose({
             role="radio"
             :aria-checked="selectedAnswers[currentIndex] === idx"
             :disabled="isSubmitted[currentIndex]"
-            class="w-full text-left p-3.5 rounded-md border text-xs font-sans transition-all flex items-start gap-3 cursor-pointer disabled:cursor-default"
+            class="w-full text-left p-3.5 rounded-md border text-xs font-sans ui-transition flex items-start gap-3 cursor-pointer disabled:cursor-default"
             :class="[
               !isSubmitted[currentIndex]
                 ? selectedAnswers[currentIndex] === idx
@@ -215,7 +215,7 @@ defineExpose({
             v-if="!isSubmitted[currentIndex]"
             type="button"
             :disabled="selectedAnswers[currentIndex] === undefined"
-            class="px-4 py-2 rounded-lg bg-[#38BDF8] text-[#020617] text-xs font-mono font-bold hover:bg-[#38BDF8]/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
+            class="px-4 py-2 rounded-lg bg-[#38BDF8] text-[#020617] text-xs font-mono font-bold hover:bg-[#38BDF8]/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ui-transition"
             data-testid="submit-answer-btn"
             @click="submitAnswer"
           >
@@ -224,7 +224,7 @@ defineExpose({
           <button
             v-else
             type="button"
-            class="px-4 py-2 rounded-lg bg-[#38BDF8] text-[#020617] text-xs font-mono font-bold hover:bg-[#38BDF8]/90 cursor-pointer flex items-center gap-1.5 transition-all"
+            class="px-4 py-2 rounded-lg bg-[#38BDF8] text-[#020617] text-xs font-mono font-bold hover:bg-[#38BDF8]/90 cursor-pointer flex items-center gap-1.5 ui-transition"
             data-testid="next-question-btn"
             @click="nextQuestion"
           >

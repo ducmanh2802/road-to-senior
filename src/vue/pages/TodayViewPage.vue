@@ -5,6 +5,10 @@ import type { TaskState, TaskCategory, LearningTask } from '../../types';
 import PageHeader from '../components/PageHeader.vue';
 import EmptyState from '../components/EmptyState.vue';
 import Modal from '../components/Modal.vue';
+import Button from '../components/ui/Button.vue';
+import Input from '../components/ui/Input.vue';
+import Select from '../components/ui/Select.vue';
+import Textarea from '../components/ui/Textarea.vue';
 import {
   Plus,
   Play,
@@ -158,13 +162,9 @@ function handleCreateTask(): void {
       description="Daily execution for Senior Java 180: Core Java, hands-on architecture, DSA drills, and system design tasks."
     >
       <template #actions>
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono font-semibold bg-[#38BDF8] text-[#0B0E14] hover:bg-[#0EA5E9] transition-colors cursor-pointer"
-          @click="isAddingTask = true"
-        >
-          <Plus class="w-3.5 h-3.5" /> Create Task
-        </button>
+        <Button variant="primary" size="md" :icon="Plus" @click="isAddingTask = true">
+          Create task
+        </Button>
       </template>
     </PageHeader>
 
@@ -201,7 +201,7 @@ function handleCreateTask(): void {
         v-for="task in filteredTasks"
         :key="task.id"
         :class="[
-          'ui-panel p-4 transition-colors duration-150 rounded-lg',
+          'ui-panel p-4 ui-transition rounded-lg',
           task.state === 'IN_PROGRESS' ? 'border-[#38BDF8]/40' : 'border-[#1B2433]',
         ]"
       >
@@ -332,64 +332,36 @@ function handleCreateTask(): void {
       </div>
     </div>
 
-    <!-- Create Task Modal -->
-    <Modal v-if="isAddingTask" title="Create New Task" @close="isAddingTask = false">
+    <!-- Create task dialog: shared primitives only -->
+    <Modal v-if="isAddingTask" title="Create task" @close="isAddingTask = false">
       <form @submit.prevent="handleCreateTask" class="space-y-4">
-        <div>
-          <label class="block text-xs font-mono font-medium text-[#94A3B8] mb-1">Title *</label>
-          <input
-            v-model="newTaskTitle"
-            type="text"
-            required
-            placeholder="e.g. Implement Kafka Idempotent Producer"
-            class="w-full px-3 py-2 text-xs bg-[#0B0E14] border border-[#1E293B] rounded text-[#F8FAFC] placeholder-[#64748B] focus:border-[#38BDF8] focus:outline-hidden"
+        <Input
+          v-model="newTaskTitle"
+          label="Title"
+          required
+          placeholder="e.g. Implement Kafka idempotent producer"
+        />
+        <Textarea
+          v-model="newTaskDesc"
+          label="Description"
+          :rows="3"
+          placeholder="Task context, requirements and validation steps…"
+        />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Select v-model="newTaskCategory" label="Category">
+            <option v-for="cat in allCategories" :key="cat" :value="cat">{{ cat }}</option>
+          </Select>
+          <Input
+            :model-value="String(newTaskMinutes)"
+            type="number"
+            label="Estimated minutes"
+            helper-text="Between 5 and 240."
+            @update:model-value="newTaskMinutes = Number($event) || 0"
           />
         </div>
-        <div>
-          <label class="block text-xs font-mono font-medium text-[#94A3B8] mb-1">Description</label>
-          <textarea
-            v-model="newTaskDesc"
-            rows="3"
-            placeholder="Task context, requirements, and validation steps..."
-            class="w-full px-3 py-2 text-xs bg-[#0B0E14] border border-[#1E293B] rounded text-[#F8FAFC] placeholder-[#64748B] focus:border-[#38BDF8] focus:outline-hidden"
-          ></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-mono font-medium text-[#94A3B8] mb-1">Category</label>
-            <select
-              v-model="newTaskCategory"
-              class="w-full px-3 py-2 text-xs bg-[#0B0E14] border border-[#1E293B] rounded text-[#F8FAFC] focus:border-[#38BDF8] focus:outline-hidden"
-            >
-              <option v-for="cat in allCategories" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-mono font-medium text-[#94A3B8] mb-1">Est. Minutes</label>
-            <input
-              v-model.number="newTaskMinutes"
-              type="number"
-              min="5"
-              max="240"
-              step="5"
-              class="w-full px-3 py-2 text-xs bg-[#0B0E14] border border-[#1E293B] rounded text-[#F8FAFC] focus:border-[#38BDF8] focus:outline-hidden"
-            />
-          </div>
-        </div>
-        <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#1E293B]">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded text-xs text-[#94A3B8] hover:text-[#F8FAFC] border border-[#1E293B] transition-colors cursor-pointer"
-            @click="isAddingTask = false"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#38BDF8] text-[#0B0E14] hover:bg-[#0EA5E9] transition-colors cursor-pointer"
-          >
-            <Plus class="w-3.5 h-3.5" /> Create Task
-          </button>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#1B2433]">
+          <Button variant="ghost" size="md" @click="isAddingTask = false">Cancel</Button>
+          <Button type="submit" variant="primary" size="md" :icon="Plus">Create task</Button>
         </div>
       </form>
     </Modal>

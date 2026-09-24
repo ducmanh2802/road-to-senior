@@ -39,7 +39,7 @@ function onChange(e: Event): void {
       :id="selectId"
       :value="modelValue"
       :disabled="disabled"
-      class="w-full bg-[#0A0E17] text-[#F1F5F9] border border-[#1B2433] hover:border-[#334155] focus:border-[#38BDF8] rounded-md text-xs px-3 py-2 transition-all duration-150 focus-ring disabled:opacity-50 disabled:cursor-not-allowed font-sans cursor-pointer"
+      class="w-full bg-[#0A0E17] text-[#F1F5F9] border border-[#1B2433] hover:border-[#334155] focus:border-[#38BDF8] rounded-md text-xs px-3 py-2 ui-transition focus-ring disabled:opacity-50 disabled:cursor-not-allowed font-sans cursor-pointer"
       @change="onChange"
     >
       <slot />

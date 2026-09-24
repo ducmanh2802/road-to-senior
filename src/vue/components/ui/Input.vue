@@ -36,7 +36,7 @@ const inputId = computed(() =>
 );
 
 const inputClasses = computed(
-  () => `w-full bg-[#0A0E17] text-[#F1F5F9] border rounded-md text-xs px-3 py-2 transition-all duration-150 placeholder-[#64748B] focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
+  () => `w-full bg-[#0A0E17] text-[#F1F5F9] border rounded-md text-xs px-3 py-2 ui-transition placeholder-[#64748B] focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
     props.error ? 'border-[#EF4444] focus:border-[#EF4444]' : 'border-[#1B2433] hover:border-[#334155] focus:border-[#38BDF8]'
   } ${props.mono ? 'font-mono' : 'font-sans'}`
 );

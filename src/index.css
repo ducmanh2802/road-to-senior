@@ -33,6 +33,11 @@
     --text-primary: #F1F5F9;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
+
+    /* Motion: restrained, 120–220ms, colour-first (never layout-shifting) */
+    --motion-duration: 150ms;
+    --motion-duration-slow: 200ms;
+    --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   body {
@@ -106,5 +111,30 @@
 .focus-ring:focus-visible {
   outline: 2px solid #38BDF8;
   outline-offset: 1px;
+}
+
+/* Interaction transitions (design-system default) */
+.ui-transition {
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-duration: var(--motion-duration);
+  transition-timing-function: var(--motion-ease);
+}
+
+.ui-transition-slow {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--motion-duration-slow);
+  transition-timing-function: var(--motion-ease);
+}
+
+/* Reduced motion: no decorative animation, no transitions, no smooth scroll */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 

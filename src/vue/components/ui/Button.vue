@@ -29,7 +29,7 @@ const props = withDefaults(
 );
 
 const baseClasses =
-  'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 focus-ring select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  'inline-flex items-center justify-center font-medium rounded-md ui-transition focus-ring select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'text-xs px-2.5 py-1 gap-1.5 h-7',
@@ -39,11 +39,13 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-[#38BDF8] text-[#0A0E17] font-semibold hover:bg-[#0284C7] active:bg-[#0369A1]',
-  secondary: 'bg-[#151D2C] hover:bg-[#1A2436] text-[#F1F5F9] border border-[#1B2433] hover:border-[#334155]',
-  ghost: 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C]',
-  outline: 'bg-transparent text-[#38BDF8] border border-[#38BDF8]/40 hover:bg-[#38BDF8]/10 hover:border-[#38BDF8]',
-  danger: 'bg-[#EF4444] text-white hover:bg-[#DC2626] font-medium',
-  success: 'bg-[#22C55E] text-[#0A0E17] font-semibold hover:bg-[#16A34A]',
+  secondary:
+    'bg-[#151D2C] hover:bg-[#1A2436] active:bg-[#101623] text-[#F1F5F9] border border-[#1B2433] hover:border-[#334155]',
+  ghost: 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] active:bg-[#101623]',
+  outline:
+    'bg-transparent text-[#38BDF8] border border-[#38BDF8]/40 hover:bg-[#38BDF8]/10 active:bg-[#38BDF8]/15 hover:border-[#38BDF8]',
+  danger: 'bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#B91C1C] font-medium',
+  success: 'bg-[#22C55E] text-[#0A0E17] font-semibold hover:bg-[#16A34A] active:bg-[#15803D]',
 };
 
 const classes = computed(
@@ -52,8 +54,13 @@ const classes = computed(
 </script>
 
 <template>
-  <button :type="type" :disabled="disabled || isLoading" :class="classes">
-    <Loader2 v-if="isLoading" class="w-3.5 h-3.5 animate-spin" />
+  <button
+    :type="type"
+    :disabled="disabled || isLoading"
+    :aria-busy="isLoading || undefined"
+    :class="classes"
+  >
+    <Loader2 v-if="isLoading" class="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
     <component :is="icon" v-else-if="icon" class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
     <slot />
   </button>

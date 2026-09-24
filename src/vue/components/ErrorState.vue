@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { AlertOctagon } from 'lucide-vue-next';
+import Button from './ui/Button.vue';
 
-defineProps<{
-  /** User-facing summary of what happened (no stack traces). */
-  message: string;
-  /** Optional technical detail, kept out of the main message. */
-  detail?: string;
-  retryLabel?: string;
-}>();
+withDefaults(
+  defineProps<{
+    /** User-facing summary of what happened (no stack traces). */
+    message: string;
+    /** Contextual heading — prefer the page's own wording over a generic one. */
+    title?: string;
+    /** Optional technical detail, kept out of the main message. */
+    detail?: string;
+    retryLabel?: string;
+  }>(),
+  { title: "Couldn't complete that action", retryLabel: 'Try again' }
+);
 
 const emit = defineEmits<{ retry: [] }>();
 const showDetail = defineModel<boolean>('detailVisible', { default: false });
@@ -23,33 +29,30 @@ function toggleDetail(): void {
     role="alert"
     data-testid="error-state"
   >
-    <div class="w-10 h-10 rounded-full bg-[#EF4444]/10 border border-[#EF4444]/30 flex items-center justify-center text-[#EF4444] mb-2.5">
-      <AlertOctagon class="w-5 h-5" aria-hidden="true" />
+    <div class="w-9 h-9 rounded-md bg-[#EF4444]/10 border border-[#EF4444]/30 flex items-center justify-center text-[#EF4444] mb-2.5">
+      <AlertOctagon class="w-4.5 h-4.5" aria-hidden="true" />
     </div>
-    <h4 class="text-sm font-semibold text-white tracking-tight">Something went wrong</h4>
-    <p class="text-xs text-[#FCA5A5] max-w-sm mt-1 mb-3 font-mono leading-relaxed">{{ message }}</p>
+    <h4 class="text-sm font-semibold text-[#F1F5F9] tracking-tight">{{ title }}</h4>
+    <p class="text-xs text-[#FCA5A5] max-w-md mt-1 mb-3 leading-relaxed">{{ message }}</p>
 
-    <div class="flex items-center gap-2">
-      <button
-        v-if="retryLabel !== ''"
-        class="px-3 py-1.5 rounded-md border border-[#EF4444]/40 bg-[#EF4444]/10 text-xs font-semibold text-[#FCA5A5] hover:bg-[#EF4444]/20 focus-ring"
-        @click="emit('retry')"
-      >
-        {{ retryLabel ?? 'Try Again' }}
-      </button>
-      <button
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      <Button variant="outline" size="md" @click="emit('retry')">
+        {{ retryLabel }}
+      </Button>
+      <Button
         v-if="detail"
-        class="px-3 py-1.5 rounded-md border border-[#1E293B] bg-[#151B28] text-xs font-mono text-[#94A3B8] hover:text-white focus-ring"
+        variant="ghost"
+        size="md"
         :aria-expanded="showDetail"
         @click="toggleDetail"
       >
         {{ showDetail ? 'Hide' : 'Show' }} technical detail
-      </button>
+      </Button>
     </div>
 
     <pre
       v-if="detail && showDetail"
-      class="mt-3 w-full max-w-md text-left text-[10px] font-mono text-[#94A3B8] bg-[#0B0E14] border border-[#1E293B] rounded p-3 overflow-x-auto custom-scrollbar"
+      class="mt-3 w-full max-w-md text-left text-[10px] font-mono text-[#94A3B8] bg-[#0A0E17] border border-[#1B2433] rounded-md p-3 overflow-x-auto custom-scrollbar"
     >{{ detail }}</pre>
   </div>
 </template>

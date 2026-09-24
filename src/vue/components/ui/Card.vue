@@ -36,7 +36,7 @@ const variantClasses: Record<CardVariant, string> = {
   sunken: 'bg-[#0A0E17] border border-[#1B2433]',
   outline: 'bg-transparent border border-[#1B2433]',
   interactive:
-    'bg-[#101623] border border-[#1B2433] hover:border-[#38BDF8]/40 hover:bg-[#151D2C] transition-colors duration-150 cursor-pointer',
+    'bg-[#101623] border border-[#1B2433] hover:border-[#38BDF8]/40 hover:bg-[#151D2C] ui-transition cursor-pointer',
   emphasis: 'bg-[#151D2C] border border-[#38BDF8]/40',
   glass: 'bg-[#101623]/90 border border-[#1B2433]',
 };
@@ -45,7 +45,7 @@ const classes = computed(
   () =>
     `rounded-lg ${variantClasses[props.variant]} ${paddingClasses[props.padding]} ${
       props.interactive && props.variant !== 'interactive'
-        ? 'hover:border-[#38BDF8]/40 hover:bg-[#151D2C] transition-colors duration-150 cursor-pointer'
+        ? 'ui-transition hover:border-[#38BDF8]/40 hover:bg-[#151D2C] cursor-pointer'
         : ''
     }`
 );

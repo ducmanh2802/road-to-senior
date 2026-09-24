@@ -26,7 +26,7 @@ import {
   BookOpen,
 } from 'lucide-vue-next';
 import PageHeader from '../components/PageHeader.vue';
-import CodeBlock from '../components/CodeBlock.vue';
+import CodeBlock from '../components/ui/CodeBlock.vue';
 import EmptyState from '../components/EmptyState.vue';
 import EnglishQuiz from '../components/EnglishQuiz.vue';
 import { useLearningStore } from '../stores/learning';
@@ -148,7 +148,7 @@ function clearFilters() {
         </div>
         <button
           type="button"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-bold transition-all shadow-sm"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-bold ui-transition shadow-sm"
           :class="[
             isQuizMode
               ? 'bg-[#0B0E14] text-[#38BDF8] border border-[#38BDF8]/40 hover:bg-[#151B28]'
@@ -290,7 +290,7 @@ function clearFilters() {
       <article
         v-for="item in filteredItems"
         :key="item.id"
-        class="rounded-lg border border-[#1E293B] bg-[#111622] overflow-hidden transition-all duration-150"
+        class="rounded-lg border border-[#1E293B] bg-[#111622] overflow-hidden ui-transition"
         :data-testid="`english-card-${item.id}`"
       >
         <!-- Card Header / Summary Bar -->

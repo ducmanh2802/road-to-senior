@@ -22,7 +22,7 @@ import {
   Zap,
 } from 'lucide-vue-next';
 import PageHeader from '../components/PageHeader.vue';
-import CodeBlock from '../components/CodeBlock.vue';
+import CodeBlock from '../components/ui/CodeBlock.vue';
 import EmptyState from '../components/EmptyState.vue';
 import { useLearningStore } from '../stores/learning';
 import {
@@ -314,7 +314,7 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
         v-for="item in filteredItems"
         :key="item.id"
         :data-testid="`ai-card-${item.id}`"
-        class="ui-panel border border-[#1E293B] bg-[#111622] rounded-lg transition-all"
+        class="ui-panel border border-[#1E293B] bg-[#111622] rounded-lg ui-transition"
         :class="{ 'border-[#38BDF8]/40 ring-1 ring-[#38BDF8]/20': isItemCompleted(item.id) }"
       >
         <!-- Card Header Banner -->

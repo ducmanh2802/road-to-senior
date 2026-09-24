@@ -204,7 +204,7 @@ defineExpose({
       <button
         v-if="currentStep === 1"
         type="button"
-        class="px-4 py-2 rounded-lg bg-[#EF4444] text-[#FFFFFF] text-xs font-mono font-bold hover:bg-[#EF4444]/90 flex items-center gap-1.5 cursor-pointer transition-all"
+        class="px-4 py-2 rounded-lg bg-[#EF4444] text-[#FFFFFF] text-xs font-mono font-bold hover:bg-[#EF4444]/90 flex items-center gap-1.5 cursor-pointer ui-transition"
         data-testid="trigger-mutation-btn"
         @click="triggerMutation"
       >
@@ -217,7 +217,7 @@ defineExpose({
       <button
         v-else-if="currentStep === 2"
         type="button"
-        class="px-4 py-2 rounded-lg bg-[#22C55E] text-[#020617] text-xs font-mono font-bold hover:bg-[#22C55E]/90 flex items-center gap-1.5 cursor-pointer transition-all"
+        class="px-4 py-2 rounded-lg bg-[#22C55E] text-[#020617] text-xs font-mono font-bold hover:bg-[#22C55E]/90 flex items-center gap-1.5 cursor-pointer ui-transition"
         data-testid="apply-fix-btn"
         @click="applyDefensiveCopyFix"
       >

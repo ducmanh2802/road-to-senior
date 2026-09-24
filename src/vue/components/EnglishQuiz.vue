@@ -124,7 +124,7 @@ defineExpose({
       </div>
       <div class="h-1.5 w-full bg-[#1E293B] rounded-full overflow-hidden">
         <div
-          class="h-full bg-[#38BDF8] transition-all duration-300"
+          class="h-full bg-[#38BDF8] ui-transition-slow"
           :style="{ width: `${((currentIndex + 1) / questions.length) * 100}%` }"
         />
       </div>
@@ -152,7 +152,7 @@ defineExpose({
             role="radio"
             :aria-checked="selectedAnswers[currentIndex] === option"
             :disabled="isSubmitted[currentIndex]"
-            class="w-full text-left p-3.5 rounded-lg border text-xs sm:text-sm font-sans transition-all flex items-start gap-3 select-none"
+            class="w-full text-left p-3.5 rounded-lg border text-xs sm:text-sm font-sans ui-transition flex items-start gap-3 select-none"
             :class="[
               // Option states after submission
               isSubmitted[currentIndex]
@@ -228,7 +228,7 @@ defineExpose({
             v-if="!isSubmitted[currentIndex]"
             type="button"
             :disabled="!selectedAnswers[currentIndex]"
-            class="flex items-center gap-1.5 px-4 py-2 rounded text-xs font-mono font-bold transition-all"
+            class="flex items-center gap-1.5 px-4 py-2 rounded text-xs font-mono font-bold ui-transition"
             :class="[
               selectedAnswers[currentIndex]
                 ? 'bg-[#38BDF8] text-[#0B0E14] hover:bg-[#38BDF8]/90 cursor-pointer shadow-sm'
@@ -243,7 +243,7 @@ defineExpose({
           <button
             v-else
             type="button"
-            class="flex items-center gap-1.5 px-4 py-2 rounded text-xs font-mono font-bold bg-[#38BDF8] text-[#0B0E14] hover:bg-[#38BDF8]/90 transition-all cursor-pointer shadow-sm"
+            class="flex items-center gap-1.5 px-4 py-2 rounded text-xs font-mono font-bold bg-[#38BDF8] text-[#0B0E14] hover:bg-[#38BDF8]/90 ui-transition cursor-pointer shadow-sm"
             data-testid="next-question-btn"
             @click="nextQuestion"
           >

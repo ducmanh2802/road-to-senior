@@ -35,9 +35,9 @@ const emit = defineEmits<{
   <component
     :is="interactive ? 'button' : 'div'"
     :type="interactive ? 'button' : undefined"
-    class="ui-panel p-3 sm:p-4 flex flex-col justify-between text-left transition-all duration-150 select-none"
+    class="ui-panel p-3 sm:p-4 flex flex-col justify-between text-left ui-transition select-none"
     :class="{
-      'hover:border-[#38BDF8]/40 hover:bg-[#151B28] cursor-pointer focus-ring': interactive,
+      'hover:border-[#38BDF8]/40 hover:bg-[#151D2C] active:bg-[#101623] cursor-pointer focus-ring': interactive,
     }"
     @click="interactive ? emit('click') : undefined"
   >

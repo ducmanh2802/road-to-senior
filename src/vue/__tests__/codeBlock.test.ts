@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import CodeBlock from '../components/CodeBlock.vue';
+import CodeBlock from '../components/ui/CodeBlock.vue';
 
 describe('CodeBlock.vue', () => {
   const sampleCode = `public class Main {

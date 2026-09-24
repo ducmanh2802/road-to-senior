@@ -139,11 +139,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/review',
     name: 'review',
-<<<<<<< HEAD
     component: () => import('../pages/ReviewPage.vue'),
-=======
-    component: ReviewPage,
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     meta: { section: 'REVIEW', title: 'Review' },
   },
   {

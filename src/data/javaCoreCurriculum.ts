@@ -69,6 +69,12 @@ export interface ModuleContent<T = Record<string, unknown>> {
       compilerCheck: string;
       patternExhaustiveness: string;
     };
+    patternMatchingDistinctions?: {
+      typePattern: string;
+      recordPattern: string;
+      whenGuards: string;
+      nullHandling: string;
+    };
     versionNotes: string;
     extraDetails?: T;
   };
@@ -139,6 +145,7 @@ export interface ModuleContent<T = Record<string, unknown>> {
 
 export type ModuleContent1_1 = ModuleContent;
 export type ModuleContent1_2 = ModuleContent;
+export type ModuleContent1_3 = ModuleContent;
 
 export const JAVA_CORE_MODULES_METADATA: JavaCoreModuleMetadata[] = [
   // Pillar 1: Language
@@ -175,11 +182,11 @@ export const JAVA_CORE_MODULES_METADATA: JavaCoreModuleMetadata[] = [
     title: 'Pattern Matching & Record Deconstruction',
     subtitle: 'Guarded Patterns, Null Handling & Switch Jump Tables',
     versionTarget: 'Java 21 → Java 25',
-    status: 'LOCKED',
+    status: 'NOT_STARTED',
     estimatedMinutes: 40,
     prerequisites: ['1.2'],
     learningObjective:
-      'Extract and transform nested polymorphic domain payloads using modern type patterns and deconstructors while avoiding precedence traps.',
+      'Extract and transform nested polymorphic domain payloads using modern type patterns, record deconstruction, and guarded when clauses without unsafe casting or null pointer exceptions.',
   },
   {
     id: '1.4',
@@ -1476,6 +1483,553 @@ return switch (s) {
       correctIndex: 1,
       explanation:
         'In event sourcing, events are immutable closed domain facts. A sealed hierarchy allows projectors and read models to handle every event exhaustively without missing critical state mutations.',
+    },
+  ],
+};
+
+export const MODULE_1_3_CONTENT: ModuleContent1_3 = {
+  metadata: JAVA_CORE_MODULES_METADATA[2],
+  learn: {
+    overview:
+      'Pattern matching in modern Java (Java 21 LTS baseline through Java 25) transforms how developers inspect, deconstruct, and transform data objects. Beginning with pattern matching for instanceof (Java 16) and expanding to Pattern Matching for switch (Java 21) and Record Patterns (Java 21), Java eliminates cumbersome explicit typecasting, boilerplate accessor chains, and defensive null checks. When combined with sealed hierarchies, pattern matching provides type-safe, compile-time verified destructuring of complex domain objects.',
+    keyPoints: [
+      'Pattern Matching for instanceof (JEP 394): Combines predicate check and conditional extraction into a single atomic operation: `if (obj instanceof String s)`. Scope of `s` is governed by flow scoping.',
+      'Pattern Matching for switch (JEP 441): Allows selector expressions to be evaluated against type patterns: `case Integer i -> ...`, `case String s -> ...`.',
+      'Record Patterns (JEP 440): Enables nested deconstruction of record components directly in case statements: `case OrderPlaced(OrderId id, Money(BigDecimal amt, String cur)) -> ...`.',
+      'Guarded Patterns (`when` clause): In Java 21+, guards use the `when` keyword (e.g., `case Transaction t when t.amount() > 10_000 -> ...`), replacing the obsolete preview syntax (`&&`).',
+      'Null Handling in Switch: By default, switching on null throws NullPointerException unless an explicit `case null` (or `case null, default`) branch is present.',
+      'Pattern Dominance: The compiler enforces dominance order. A broader pattern (e.g., `case CharSequence cs`) must not appear before a more specific pattern (e.g., `case String s`), or javac fails with a compilation error.',
+      'Exhaustiveness & Sealed Types: A switch over a sealed hierarchy or record with type patterns must be exhaustive. The compiler requires either all permitted subtypes or an explicit `default` branch.',
+    ],
+    patternMatchingDistinctions: {
+      typePattern:
+        'Tests whether a target has a specific type and binds it to a local pattern variable in one step without manual downcasting.',
+      recordPattern:
+        'Deconstructs a record instance into its individual component values at match time, matching nested records recursively.',
+      whenGuards:
+        'Applies arbitrary boolean conditions via `when` clauses after pattern matching succeeds, allowing fine-grained domain routing without nested if-else ladders.',
+      nullHandling:
+        'Traditional switch threw NPE immediately upon encountering null. Java 21 switch allows explicit `case null ->` handling directly alongside type patterns.',
+    },
+    versionNotes:
+      'Pattern matching for instanceof finalized in Java 16. Pattern Matching for switch (JEP 441) and Record Patterns (JEP 440) finalized as stable standard features in Java 21 LTS. Validated and supported in Java 25.',
+  },
+  buildLab: {
+    title: 'Deconstructed Domain Event Dispatcher: Audit & Transaction Pipeline',
+    description:
+      'Demonstrates real-world Java 21+ pattern matching for switch, record deconstruction, guarded when clauses, and explicit null routing in an enterprise transaction auditor.',
+    filename: 'TransactionEventDispatcher.java',
+    code: `package com.seniorjava.patternmatching;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
+
+// Sealed Event Hierarchy with Nested Records
+public sealed interface DomainEvent permits OrderEvent, PaymentEvent, SecurityAlert {
+
+  record OrderId(String value) {
+    public OrderId {
+      Objects.requireNonNull(value, "OrderId cannot be null");
+    }
+  }
+
+  record Money(BigDecimal amount, String currency) {
+    public Money {
+      Objects.requireNonNull(amount, "Amount cannot be null");
+      Objects.requireNonNull(currency, "Currency cannot be null");
+    }
+  }
+
+  // Nested record events
+  record OrderEvent(OrderId id, Money total, int itemCount) implements DomainEvent {}
+  record PaymentEvent(String transactionId, Money amount, String method) implements DomainEvent {}
+  record SecurityAlert(String sourceIp, String severity, Instant timestamp) implements DomainEvent {}
+}
+
+/**
+ * Enterprise Event Dispatcher demonstrating:
+ * 1. Explicit case null handling
+ * 2. Record deconstruction (nested pattern matching)
+ * 3. Guarded patterns using 'when'
+ * 4. Dominance ordering
+ * 5. Compiler-enforced exhaustiveness without default
+ */
+public final class TransactionEventDispatcher {
+
+  public static String dispatch(DomainEvent event) {
+    return switch (event) {
+      // 1. Explicit null handling avoids unexpected NPE
+      case null -> "IGNORED: Received null event payload";
+
+      // 2. Guarded Record Pattern: High-value orders flagged for VIP audit
+      case DomainEvent.OrderEvent(var id, DomainEvent.Money(var amount, var cur), var count)
+          when amount.compareTo(new BigDecimal("10000.00")) >= 0 ->
+        "VIP_AUDIT: Order " + id.value() + " exceeds limit with " + amount + " " + cur + " (" + count + " items)";
+
+      // 3. Standard Record Pattern deconstruction
+      case DomainEvent.OrderEvent(var id, var total, var count) ->
+        "STANDARD_ORDER: Order " + id.value() + " total: " + total.amount() + " " + total.currency();
+
+      // 4. Guarded Payment Pattern: Flag suspicious crypto or international payments
+      case DomainEvent.PaymentEvent(var txId, DomainEvent.Money(var amount, var cur), var method)
+          when "CRYPTO".equalsIgnoreCase(method) || amount.compareTo(new BigDecimal("50000.00")) > 0 ->
+        "COMPLIANCE_HOLD: Tx " + txId + " (" + method + ") amount: " + amount + " " + cur;
+
+      case DomainEvent.PaymentEvent(var txId, var amount, var method) ->
+        "CLEARED_PAYMENT: Tx " + txId + " via " + method + " amount: " + amount.amount();
+
+      // 5. Critical Security Alerts
+      case DomainEvent.SecurityAlert(var ip, var severity, var ts)
+          when "CRITICAL".equalsIgnoreCase(severity) ->
+        "IMMEDIATE_SECOPS_PAGER: High risk incident from " + ip + " logged at " + ts;
+
+      case DomainEvent.SecurityAlert(var ip, var severity, var ts) ->
+        "SECURITY_LOG: [" + severity + "] Incident from " + ip + " at " + ts;
+    };
+  }
+}`,
+    architecturalNotes: [
+      'Deconstructs nested record components (Money within OrderEvent) directly in the case pattern signature, eliminating verbose variable accessors.',
+      'Uses guarded `when` clauses to express fine-grained business routing without polluting case bodies with nested if-statements.',
+      'Explicit `case null` guarantees zero unexpected NullPointerExceptions without requiring defensive null checks prior to the switch statement.',
+      'Exhaustive across all permitted subtypes of DomainEvent without requiring a generic `default:` branch, preserving compiler alerting when new events are added.',
+    ],
+  },
+  breakLab: {
+    title: 'Pattern Dominance Violation & Missing Null Trap',
+    hazard:
+      'Improper pattern order causes compilation failure (pattern dominance), while omitting null handling triggers fatal runtime NullPointerException in production switch dispatchers.',
+    filename: 'VulnerableDispatcher.java',
+    vulnerableCode: `package com.seniorjava.patternmatching;
+
+public class VulnerableDispatcher {
+
+  // VULNERABILITY 1: Dominance ordering bug
+  // CharSequence pattern dominates String pattern, causing compilation error!
+  public static String inspectDominance(Object obj) {
+    /*
+    return switch (obj) {
+      case CharSequence cs -> "CharSequence: " + cs.length();
+      case String s -> "String: " + s.toUpperCase(); // COMPILE ERROR: 'This case label is dominated by a preceding case label'
+      default -> "Other";
+    };
+    */
+    return "Dominated pattern will not compile";
+  }
+
+  // VULNERABILITY 2: Fatal NullPointerException on null payload
+  public static String processUntrustedEvent(DomainEvent event) {
+    // BUG: If event is null, Java switch throws NullPointerException immediately!
+    return switch (event) {
+      case DomainEvent.OrderEvent o -> "Order: " + o.id().value();
+      case DomainEvent.PaymentEvent p -> "Payment: " + p.transactionId();
+      case DomainEvent.SecurityAlert s -> "Security: " + s.sourceIp();
+      // Missing 'case null' causes immediate crash when upstream queues deliver null
+    };
+  }
+}`,
+    mutationExplanation:
+      'Java pattern matching switches enforce strict dominance: more specific patterns (like String or guarded patterns) must always precede broader patterns (like CharSequence or unguarded patterns). Furthermore, traditional and pattern switches evaluate the selector expression before branch selection, throwing NullPointerException if the selector is null unless an explicit `case null` label is provided.',
+  },
+  observeDebug: {
+    title: 'Step-by-Step Reproduction: Pattern Matching Pitfalls',
+    steps: [
+      {
+        step: 1,
+        instruction: 'Dispatch a null event payload to an unhandled pattern switch',
+        expectedObservation:
+          'JVM immediately throws java.lang.NullPointerException at runtime at the switch selector evaluation before evaluating any case labels.',
+        codeSnippet: 'TransactionEventDispatcher.dispatch(null); // Triggers NPE if "case null" is omitted',
+      },
+      {
+        step: 2,
+        instruction: 'Place an unguarded type pattern ahead of a guarded type pattern',
+        expectedObservation:
+          'javac fails with: "error: this case label is dominated by a preceding case label" because the unguarded pattern matches all instances.',
+        codeSnippet: 'case OrderEvent o -> ...; \ncase OrderEvent o when o.total().amount().intValue() > 100 -> ...; // DOMINATED!',
+      },
+      {
+        step: 3,
+        instruction: 'Evaluate record deconstruction with deeply nested null components',
+        expectedObservation:
+          'If the outer record is present but an inner component is null (e.g. OrderEvent with null Money), matching OrderEvent(var id, Money(var amt, var cur), ...) fails to match and falls to subsequent branches.',
+        codeSnippet: 'new OrderEvent(new OrderId("1"), null, 5); // Fails nested Money deconstruction pattern',
+      },
+      {
+        step: 4,
+        instruction: 'Review compiler bytecode generation: lookupswitch and type test helper',
+        expectedObservation:
+          'javac compiles pattern switches into type-switch bootstraps using invokedynamic to TypeSwitch.typeSwitch, providing O(1) or O(log N) jump table performance rather than chained if-else instanceof checks.',
+      },
+    ],
+    debugInvestigation:
+      'When debugging pattern switch issues, check two things first: (1) Does the selector handle null explicitly via `case null`? (2) Are guarded cases placed strictly BEFORE their corresponding unguarded base patterns?',
+  },
+  fixLab: {
+    title: 'Production-Hardened Pattern Dispatcher with Null Safety & Correct Dominance',
+    remediation:
+      'Restructure case labels so guarded patterns precede general patterns, add an explicit `case null` handler, and ensure all record deconstructions have fallback branches for incomplete payloads.',
+    filename: 'HardenedPatternDispatcher.java',
+    fixedCode: `package com.seniorjava.patternmatching;
+
+import java.math.BigDecimal;
+
+public final class HardenedPatternDispatcher {
+
+  public static String audit(Object payload) {
+    return switch (payload) {
+      // 1. Explicit null safety
+      case null -> "REJECTED: Null payload";
+
+      // 2. Specific guarded record patterns FIRST
+      case DomainEvent.OrderEvent(var id, DomainEvent.Money(var amount, _), _)
+          when amount.compareTo(new BigDecimal("1000.00")) > 0 ->
+        "AUDIT_HIGH_VALUE_ORDER: " + id.value();
+
+      // 3. General record pattern SECOND
+      case DomainEvent.OrderEvent(var id, _, var count) ->
+        "AUDIT_STANDARD_ORDER: " + id.value() + " (" + count + " items)";
+
+      // 4. Subtypes before Supertypes (String before CharSequence)
+      case String s when s.isBlank() -> "EMPTY_STRING";
+      case String s -> "STRING_CONTENT: " + s.trim();
+      case CharSequence cs -> "GENERIC_CHAR_SEQUENCE: length=" + cs.length();
+
+      // 5. Sealed hierarchy variants
+      case DomainEvent.PaymentEvent p -> "PAYMENT: " + p.transactionId();
+      case DomainEvent.SecurityAlert s -> "SECURITY: " + s.sourceIp();
+
+      // 6. Final fallback for open Object hierarchy
+      default -> "UNKNOWN_TYPE: " + payload.getClass().getName();
+    };
+  }
+}`,
+    copyOfNuances: [
+      'Guarded patterns (`case Type var when condition`) must always be positioned before unguarded patterns (`case Type var`) of the same type.',
+      'More specific types (e.g., `String`) must be positioned before assignable supertypes (e.g., `CharSequence`).',
+      'The underscore `_` unnamed pattern (finalized in Java 22 / standard in Java 25) can be used for unused components in record deconstruction.',
+      'Explicit `case null ->` prevents any runtime NPE and makes null handling intentional in enterprise domain services.',
+    ],
+  },
+  benchmark: {
+    title: 'Pattern Matching Switch vs Chained instanceof Performance',
+    disclaimer:
+      'Benchmarks measured on OpenJDK 21/25 on Linux x86_64. Pattern switch compiles down to invokedynamic TypeSwitch tables with JIT-accelerated dispatch tables.',
+    points: [
+      'Chained if-else instanceof: O(N) sequential branch evaluations. As the number of variants increases (e.g., 10+ event types), CPU branch prediction miss rates increase significantly.',
+      'Pattern switch with invokedynamic: OpenJDK uses a bootstrap method (SwitchBootstraps.typeSwitch) that caches type indices, translating the dispatch into a compact jump table with near O(1) complexity.',
+      'Record deconstruction overhead: JIT escape analysis scalar-replaces record instances in many matching paths, meaning record deconstruction introduces zero heap allocation overhead.',
+      'Guarded pattern evaluation: Guard expressions (`when condition`) are executed only after the type pattern matches, preventing unnecessary predicate computations on mismatched types.',
+    ],
+  },
+  design: {
+    title: 'Enterprise Payment Webhook Processor (CQRS / Event Ingestion)',
+    scenario:
+      'Architect a high-throughput webhook ingestion engine for an international payment gateway. Webhooks arrive as heterogeneous JSON payloads deserialized into polymorphic sealed events. The engine must route payments, chargebacks, fraud alerts, and currency conversions with zero runtime downcasting and full compiler exhaustiveness.',
+    requirements: [
+      'Process 4 distinct webhook payload types: PaymentAuthorized, PaymentCaptured, ChargebackInitiated, CurrencyExchanged.',
+      'Deconstruct nested money amounts and merchant metadata directly in pattern switch cases.',
+      'Apply guarded rules: flag transactions exceeding $10,000 USD or high-risk jurisdictions.',
+      'Guarantee 100% compile-time exhaustiveness without a default fallback, so new webhook events fail compilation until handled.',
+      'Provide zero-NPE resilience for malformed or missing webhook payloads.',
+    ],
+    sampleDesignCode: `package com.seniorjava.design.webhook;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+
+public final class WebhookProcessingService {
+
+  public sealed interface WebhookEvent permits 
+      PaymentAuthorized, PaymentCaptured, ChargebackInitiated, CurrencyExchanged {}
+
+  public record Money(BigDecimal amount, String currency) {}
+  public record MerchantId(String value) {}
+
+  public record PaymentAuthorized(String paymentId, MerchantId merchant, Money money, String riskScore) implements WebhookEvent {}
+  public record PaymentCaptured(String paymentId, Money money, String settlementAccount) implements WebhookEvent {}
+  public record ChargebackInitiated(String paymentId, Money disputeAmount, String reasonCode) implements WebhookEvent {}
+  public record CurrencyExchanged(String exchangeId, Money source, Money target, BigDecimal exchangeRate) implements WebhookEvent {}
+
+  public enum ProcessingRoute {
+    HIGH_RISK_FRAUD_REVIEW,
+    STANDARD_SETTLEMENT,
+    DISPUTE_ARBITRATION,
+    FX_TREASURY_HEDGE,
+    DISCARD_INVALID
+  }
+
+  public ProcessingRoute processWebhook(WebhookEvent event) {
+    return switch (event) {
+      case null -> ProcessingRoute.DISCARD_INVALID;
+
+      // Rule 1: High risk or high value authorized payments require immediate fraud review
+      case PaymentAuthorized(var id, _, Money(var amt, _), var risk)
+          when "HIGH".equals(risk) || amt.compareTo(new BigDecimal("10000.00")) >= 0 ->
+        ProcessingRoute.HIGH_RISK_FRAUD_REVIEW;
+
+      // Rule 2: Normal authorization proceeds to settlement
+      case PaymentAuthorized authorized ->
+        ProcessingRoute.STANDARD_SETTLEMENT;
+
+      // Rule 3: Captures proceed to settlement
+      case PaymentCaptured captured ->
+        ProcessingRoute.STANDARD_SETTLEMENT;
+
+      // Rule 4: Chargebacks immediately route to dispute team
+      case ChargebackInitiated dispute ->
+        ProcessingRoute.DISPUTE_ARBITRATION;
+
+      // Rule 5: Cross-currency FX events route to treasury
+      case CurrencyExchanged fx ->
+        ProcessingRoute.FX_TREASURY_HEDGE;
+    };
+  }
+}`,
+    architecturalQuestions: [
+      {
+        question: 'Why is omitting the default branch crucial in this webhook design?',
+        answer:
+          'When the payment gateway introduces a new webhook event (e.g., RefundProcessed), omitting default causes javac to throw a compilation error immediately. If default existed, the refund would silently take the default route without any engineer noticing.',
+      },
+      {
+        question: 'How does record deconstruction improve safety over traditional getter calls?',
+        answer:
+          'Record deconstruction validates structural type components at match time. Pattern variables are strictly typed and immutable, eliminating null getter NPE chains and manual casts.',
+      },
+    ],
+  },
+  explain60s: {
+    prompt:
+      'Explain Pattern Matching & Switch in modern Java to a Principal Engineer in 60 seconds.',
+    script:
+      'Modern Java pattern matching turns switch and instanceof into declarative data transformation engines. Instead of casting types imperatively after an instanceof check or writing nested if-else ladders with getter chains, Java 21+ lets us match on types, deconstruct records recursively down to their primitives, and attach guarded boolean conditions using the when keyword. The compiler enforces pattern dominance so general cases cannot shadow specific ones, optimizes the dispatch using invokedynamic jump tables rather than O(N) comparisons, and with sealed types, enforces 100% branch exhaustiveness at compile time. It eliminates boilerplate, prevents ClassCastExceptions, and gives Java the expressive power of algebraic data types found in functional languages.',
+  },
+  staffDefense: {
+    questions: [
+      {
+        q: 'Why did the Java language designers introduce the "when" keyword for guards instead of reusing "&&"?',
+        defense:
+          'In early previews (Java 17-19), guards used `&&`. However, this created semantic ambiguity between pattern composition (matching pattern A and pattern B) and boolean evaluation. The `when` keyword explicitly separates the structural type pattern from the arbitrary boolean condition evaluated after match success.',
+      },
+      {
+        q: 'What is pattern dominance, and why does javac enforce it as a hard compilation error?',
+        defense:
+          'Dominance occurs when a preceding pattern matches a superset of a subsequent pattern. For example, `case CharSequence cs` dominates `case String s`. If javac allowed this, the dominated case would be dead code. Enforcing dominance prevents unreachable branch bugs.',
+      },
+      {
+        q: 'How does switch evaluate null, and what is the difference between omitting null vs explicit `case null`?',
+        defense:
+          'By default in Java specification, switching over a null reference throws NullPointerException at the selector expression before evaluating cases. By adding an explicit `case null`, the switch handles null safely. You can also combine `case null, default ->` if you want null to fall to fallback handling.',
+      },
+      {
+        q: 'How does the JVM execute pattern switches under the hood? Does it just do chained if-else instanceof?',
+        defense:
+          'No. javac uses invokedynamic to invoke SwitchBootstraps.typeSwitch. The bootstrap method builds an internal jump table mapping classes to integer case indices. On subsequent dispatches, the JVM jumps directly to the matching case branch, providing O(1) to O(log N) performance.',
+      },
+      {
+        q: 'Can record patterns deconstruct arbitrary Java classes, or only records?',
+        defense:
+          'Only records. Records have transparent nominal state descriptions where components, canonical constructors, and accessors are guaranteed by the language specification. Arbitrary classes do not have guaranteed transparent deconstruction.',
+      },
+      {
+        q: 'What happens if a record has a component that is null during nested deconstruction?',
+        defense:
+          'A record pattern `Point(int x, int y)` will match a Point instance even if components are objects that are null. But if you have nested record patterns like `Window(Point(int x, int y))`, if the Point component itself is null, the nested pattern fails to match and proceeds to the next case label.',
+      },
+      {
+        q: 'Is it safe to use pattern matching in performance-critical low-latency hot loops?',
+        defense:
+          'Yes. Pattern matching does not create object allocations for matched pattern variables. JIT C2 escape analysis frequently eliminates intermediate record allocations entirely through scalar replacement.',
+      },
+      {
+        q: 'How do unnamed variables and patterns (`_`) enhance pattern matching in Java 22+?',
+        defense:
+          'When deconstructing a record with many components, you often only care about one or two. The underscore `_` tells the compiler and human reader that a component is ignored, reducing cognitive overhead and eliminating unused variable warnings.',
+      },
+    ],
+  },
+  interviewDrill: {
+    questions: [
+      {
+        question:
+          'What is the difference between statement switch and expression switch, and how do pattern matching semantics apply to both?',
+        rubric:
+          'Candidate must state: expression switches produce a value and MUST be exhaustive. Statement switches do not produce a value, but when using pattern matching or sealed types, statement switches must ALSO be exhaustive. Expression switches use `->` and do not fall through by default.',
+      },
+      {
+        question:
+          'Explain what happens when this compiles: `switch (obj) { case String s -> ...; case String s when s.length() > 5 -> ...; }`',
+        rubric:
+          'Candidate must identify compilation error: The unguarded `case String s` appears before the guarded `case String s when ...`, so the guarded case is dominated and unreachable.',
+      },
+      {
+        question:
+          'How do you handle null in a Java 21 pattern switch without writing `if (obj == null)` before the switch?',
+        rubric:
+          'Candidate must mention: Use `case null -> ...` or `case null, default -> ...` directly inside the switch block.',
+      },
+      {
+        question:
+          'What is flow scoping in pattern matching for instanceof?',
+        rubric:
+          'Candidate must explain that a pattern variable is in scope only where the pattern is definitely matched. In `if (obj instanceof String s && s.length() > 0)`, `s` is in scope for the second condition. But in `if (obj instanceof String s || ...)`, `s` is not in scope for the OR branch.',
+      },
+    ],
+  },
+  assessment: [
+    {
+      id: 'q1-1_3',
+      type: 'conceptual',
+      prompt:
+        'In Java 21+, what keyword is standard for attaching a boolean guard condition to a pattern in a switch expression?',
+      options: ['if', 'when', '&&', 'where'],
+      correctIndex: 1,
+      explanation:
+        'Java 21 finalized the `when` clause for guarded patterns (JEP 441), replacing the earlier preview syntax that used `&&`.',
+    },
+    {
+      id: 'q2-1_3',
+      type: 'conceptual',
+      prompt:
+        'What occurs if you switch on an object reference that is `null` in a pattern switch with NO `case null` branch?',
+      options: [
+        'The switch returns null.',
+        'The switch matches the default branch if present.',
+        'The JVM throws NullPointerException at runtime when evaluating the selector expression.',
+        'The switch ignores the statement and continues execution.',
+      ],
+      correctIndex: 2,
+      explanation:
+        'If the selector evaluates to null and there is no explicit `case null` (or `case null, default`), the switch expression throws NullPointerException before evaluating any pattern cases.',
+    },
+    {
+      id: 'q3-1_3',
+      type: 'conceptual',
+      prompt:
+        'Why does the following code fail to compile?\n\nswitch (obj) {\n  case Object o -> "All objects";\n  case String s -> "String object";\n}',
+      codeSnippet: 'switch (obj) {\n  case Object o -> "All objects";\n  case String s -> "String object";\n}',
+      options: [
+        'String cannot be matched in a switch.',
+        'Pattern dominance: `case Object o` matches all non-null instances, dominating and making `case String s` unreachable.',
+        'Object does not support pattern matching.',
+        'Pattern switch requires an explicit default branch.',
+      ],
+      correctIndex: 1,
+      explanation:
+        'javac strictly prohibits dominated patterns. Because Object is an assignable supertype of String, `case Object o` dominates `case String s`.',
+    },
+    {
+      id: 'q4-1_3',
+      type: 'conceptual',
+      prompt:
+        'Under Java flow scoping rules, in which of the following expressions is the pattern variable `s` validly in scope?',
+      options: [
+        'if (obj instanceof String s || s.isEmpty())',
+        'if (!(obj instanceof String s)) { return s; }',
+        'if (obj instanceof String s && s.length() > 5)',
+        'if (obj instanceof String s || true)',
+      ],
+      correctIndex: 2,
+      explanation:
+        'In `if (obj instanceof String s && s.length() > 5)`, the right operand of `&&` only executes if the left operand was true, so `s` is definitely in scope.',
+    },
+    {
+      id: 'q5-1_3',
+      type: 'conceptual',
+      prompt:
+        'What bytecode mechanism does OpenJDK primarily use to optimize pattern switches over types?',
+      options: [
+        'Reflection via Class.forName',
+        'invokedynamic targeting SwitchBootstraps.typeSwitch to generate jump index tables',
+        'Chained series of checkcast and instanceof opcodes',
+        'JNI native C++ calls',
+      ],
+      correctIndex: 1,
+      explanation:
+        'OpenJDK compiles pattern switches into invokedynamic instructions linked by SwitchBootstraps.typeSwitch, caching type indices for fast jump table dispatch.',
+    },
+    {
+      id: 'q6-1_3',
+      type: 'code-tracing',
+      prompt:
+        'What is the output of dispatch("hello") given this code?\n\nString dispatch(Object o) {\n  return switch (o) {\n    case String s when s.length() < 3 -> "SHORT";\n    case String s -> "STANDARD";\n    case CharSequence cs -> "CHAR_SEQ";\n    default -> "OTHER";\n  };\n}',
+      codeSnippet: 'dispatch("hello")',
+      options: ['"SHORT"', '"STANDARD"', '"CHAR_SEQ"', '"OTHER"'],
+      correctIndex: 1,
+      explanation:
+        '"hello" is a String. Its length is 5 (not < 3), so the guard fails. It falls to the next matching case `case String s`, returning "STANDARD".',
+    },
+    {
+      id: 'q7-1_3',
+      type: 'code-tracing',
+      prompt:
+        'Given:\nrecord Point(int x, int y) {}\nrecord Circle(Point center, int radius) {}\n\nWhat is returned by inspect(new Circle(new Point(0, 5), 10))?\n\nString inspect(Object obj) {\n  return switch (obj) {\n    case Circle(Point(var x, var y), var r) when x == 0 && y == 0 -> "ORIGIN_CIRCLE";\n    case Circle(Point(var x, var y), var r) when x == 0 -> "Y_AXIS_CIRCLE:" + y;\n    case Circle c -> "GENERIC_CIRCLE";\n    default -> "UNKNOWN";\n  };\n}',
+      options: ['"ORIGIN_CIRCLE"', '"Y_AXIS_CIRCLE:5"', '"GENERIC_CIRCLE"', '"UNKNOWN"'],
+      correctIndex: 1,
+      explanation:
+        'The circle center has x=0, y=5. The first guard fails (y != 0). The second guard succeeds (x == 0), evaluating to "Y_AXIS_CIRCLE:5".',
+    },
+    {
+      id: 'q8-1_3',
+      type: 'debugging',
+      prompt:
+        'A developer writes:\ncase OrderEvent o when o.total() > 100 -> handleHigh(o);\ncase OrderEvent o -> handleStandard(o);\ncase OrderEvent o when o.isVip() -> handleVip(o);\n\nWhy does javac reject this code?',
+      options: [
+        'OrderEvent cannot be used more than once in a switch.',
+        'The third case is dominated by the second case (`case OrderEvent o` matches all OrderEvents), making the VIP check unreachable.',
+        'when clauses cannot evaluate boolean methods like isVip().',
+        'handleHigh and handleStandard have different return types.',
+      ],
+      correctIndex: 1,
+      explanation:
+        'The unguarded `case OrderEvent o` matches all instances of OrderEvent. Any subsequent case matching OrderEvent (guarded or not) is dominated and rejected by javac.',
+    },
+    {
+      id: 'q9-1_3',
+      type: 'debugging',
+      prompt:
+        'An enterprise app receives a webhook payload with a null field: `new OrderEvent(id, null, 2)` where the pattern is `case OrderEvent(var id, Money(var amt, var cur), var count)`. What happens during pattern matching?',
+      options: [
+        'The pattern throws NullPointerException.',
+        'The pattern fails to match, and the switch proceeds to the next case label.',
+        'The Money component variables are assigned to default null.',
+        'The JVM terminates.',
+      ],
+      correctIndex: 1,
+      explanation:
+        'In record pattern deconstruction, if an inner record pattern expects an instance of Money, but the component is null, the pattern match fails cleanly and execution proceeds to the next case without throwing NPE.',
+    },
+    {
+      id: 'q10-1_3',
+      type: 'design',
+      prompt:
+        'Why does combining Sealed Hierarchies with Pattern Matching Switch expressions provide superior compile-time safety over the traditional Visitor Pattern in Java?',
+      options: [
+        'Visitor pattern runs 100x faster than pattern switch.',
+        'Sealed pattern switch eliminates boilerplate visitor interfaces and double-dispatch indirection while maintaining compiler-verified exhaustiveness when new variants are added.',
+        'Pattern matching automatically writes database queries.',
+        'Visitor pattern is deprecated in Java 21.',
+      ],
+      correctIndex: 1,
+      explanation:
+        'The Visitor pattern was historically used in Java to simulate algebraic pattern matching with double dispatch. Sealed classes + pattern switch achieve the exact same exhaustiveness natively without boilerplate visitor interfaces.',
+    },
+    {
+      id: 'q11-1_3',
+      type: 'design',
+      prompt:
+        'When designing a REST or gRPC event router consuming third-party external payloads, what is the recommended practice for handling null and unexpected types in pattern switches?',
+      options: [
+        'Never handle null; let the framework crash with NPE.',
+        'Provide explicit `case null ->` for known empty payloads, and `default ->` only when handling an open, non-sealed type hierarchy with unexpected future types.',
+        'Always wrap every pattern in a try-catch block inside each case.',
+        'Convert all objects to String before switching.',
+      ],
+      correctIndex: 1,
+      explanation:
+        'For open hierarchies (like Object or third-party untrusted payloads), explicit `case null ->` avoids runtime NPEs, while `default ->` safely catches unmapped or unrecognized message types.',
     },
   ],
 };

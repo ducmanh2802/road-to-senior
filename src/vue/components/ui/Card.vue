@@ -31,21 +31,21 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 const variantClasses: Record<CardVariant, string> = {
-  default: 'bg-[#111622] border border-[#1E293B]',
-  elevated: 'bg-[#151B28] border border-[#1E293B] shadow-lg shadow-black/20',
-  sunken: 'bg-[#0B0E14] border border-[#1E293B]',
-  outline: 'bg-transparent border border-[#1E293B]',
+  default: 'bg-[#101623] border border-[#1B2433]',
+  elevated: 'bg-[#151D2C] border border-[#1B2433]',
+  sunken: 'bg-[#0A0E17] border border-[#1B2433]',
+  outline: 'bg-transparent border border-[#1B2433]',
   interactive:
-    'bg-[#111622] border border-[#1E293B] hover:border-[#38BDF8]/40 hover:bg-[#151B28] transition-all duration-150 cursor-pointer',
-  emphasis: 'bg-[#151B28] border border-[#38BDF8]/30 shadow-md shadow-[#38BDF8]/5',
-  glass: 'bg-[#111622]/80 backdrop-blur-xs border border-[#1E293B]',
+    'bg-[#101623] border border-[#1B2433] hover:border-[#38BDF8]/40 hover:bg-[#151D2C] transition-colors duration-150 cursor-pointer',
+  emphasis: 'bg-[#151D2C] border border-[#38BDF8]/40',
+  glass: 'bg-[#101623]/90 border border-[#1B2433]',
 };
 
 const classes = computed(
   () =>
-    `rounded-md ${variantClasses[props.variant]} ${paddingClasses[props.padding]} ${
+    `rounded-lg ${variantClasses[props.variant]} ${paddingClasses[props.padding]} ${
       props.interactive && props.variant !== 'interactive'
-        ? 'hover:border-[#38BDF8]/40 hover:bg-[#151B28] transition-all duration-150 cursor-pointer'
+        ? 'hover:border-[#38BDF8]/40 hover:bg-[#151D2C] transition-colors duration-150 cursor-pointer'
         : ''
     }`
 );

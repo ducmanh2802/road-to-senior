@@ -122,13 +122,13 @@ defineExpose({
       </div>
 
       <!-- Question Card -->
-      <div class="p-5 rounded-xl border border-[#1E293B] bg-[#151B28] space-y-4">
-        <h4 class="text-base font-semibold text-[#F8FAFC] leading-snug">
+      <div class="p-5 rounded-lg border border-[#1B2433] bg-[#151D2C] space-y-4">
+        <h4 class="text-base font-semibold text-[#F1F5F9] leading-snug">
           {{ currentQuestion.prompt }}
         </h4>
 
         <!-- Code Snippet if applicable -->
-        <div v-if="currentQuestion.codeSnippet" class="p-3 bg-[#0B0E14] border border-[#1E293B] rounded-lg font-mono text-xs text-[#38BDF8] overflow-x-auto whitespace-pre">
+        <div v-if="currentQuestion.codeSnippet" class="p-3 bg-[#0A0E17] border border-[#1B2433] rounded-md font-mono text-xs text-[#38BDF8] overflow-x-auto whitespace-pre">
           <code>{{ currentQuestion.codeSnippet }}</code>
         </div>
 
@@ -141,17 +141,17 @@ defineExpose({
             role="radio"
             :aria-checked="selectedAnswers[currentIndex] === idx"
             :disabled="isSubmitted[currentIndex]"
-            class="w-full text-left p-3.5 rounded-lg border text-xs font-sans transition-all flex items-start gap-3 cursor-pointer disabled:cursor-default"
+            class="w-full text-left p-3.5 rounded-md border text-xs font-sans transition-all flex items-start gap-3 cursor-pointer disabled:cursor-default"
             :class="[
               !isSubmitted[currentIndex]
                 ? selectedAnswers[currentIndex] === idx
-                  ? 'border-[#38BDF8] bg-[#38BDF8]/15 text-[#F8FAFC] font-medium'
-                  : 'border-[#1E293B] bg-[#111622] text-[#CBD5E1] hover:border-[#38BDF8]/30 hover:bg-[#151B28]'
+                  ? 'border-[#38BDF8] bg-[#38BDF8]/15 text-[#F1F5F9] font-medium'
+                  : 'border-[#1B2433] bg-[#101623] text-[#CBD5E1] hover:border-[#38BDF8]/30 hover:bg-[#151D2C]'
                 : idx === currentQuestion.correctIndex
                 ? 'border-[#22C55E] bg-[#22C55E]/15 text-[#22C55E] font-medium'
                 : selectedAnswers[currentIndex] === idx
                 ? 'border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444]'
-                : 'border-[#1E293B] bg-[#111622] text-[#64748B] opacity-60'
+                : 'border-[#1B2433] bg-[#101623] text-[#64748B] opacity-60'
             ]"
             :data-testid="`option-${idx}`"
             @click="selectOption(idx)"

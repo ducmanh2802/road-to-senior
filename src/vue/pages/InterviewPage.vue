@@ -19,10 +19,10 @@
           v-for="cat in categories"
           :key="cat"
           type="button"
-          :class="`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors whitespace-nowrap border cursor-pointer ${
+          :class="`px-3 py-1.5 rounded-md text-xs font-mono transition-colors whitespace-nowrap border cursor-pointer ${
             selectedCategory === cat
-              ? 'bg-[#22C55E] text-[#0B0E14] font-bold border-[#4ADE80] shadow-sm'
-              : 'bg-[#151B28] text-[#94A3B8] hover:text-[#F8FAFC] border-[#1E293B] hover:border-[#334155]'
+              ? 'bg-[#38BDF8] text-[#0A0E17] font-semibold border-[#38BDF8]'
+              : 'bg-[#151D2C] text-[#94A3B8] hover:text-[#F1F5F9] border-[#1B2433] hover:border-[#334155]'
           }`"
           @click="handleSelectCategory(cat)"
         >
@@ -34,7 +34,7 @@
     <!-- Main Grilling Screen -->
     <Card v-if="currentQ" variant="default" padding="lg" class="space-y-5">
       <div class="flex items-center justify-between font-mono text-xs">
-        <Badge variant="success" size="sm">{{ currentQ.category }} · {{ currentQ.difficulty }}</Badge>
+        <Badge variant="primary" size="sm">{{ currentQ.category }} · {{ currentQ.difficulty }}</Badge>
         <span class="text-[#64748B]">
           Question {{ activeQuestionIndex + 1 }} of {{ filteredQuestions.length }}
         </span>
@@ -44,13 +44,13 @@
         <div class="text-xs font-mono text-[#38BDF8] uppercase font-bold tracking-wider">
           INTERVIEWER PROMPT:
         </div>
-        <h2 class="text-lg sm:text-xl font-bold text-[#F8FAFC] leading-snug">
+        <h2 class="text-lg sm:text-xl font-bold text-[#F1F5F9] leading-snug">
           {{ currentQ.question }}
         </h2>
       </div>
 
       <!-- Key points expected -->
-      <div class="p-4 bg-[#151B28] border border-[#1E293B] rounded-xl font-mono text-xs space-y-2">
+      <div class="p-4 bg-[#101623] border border-[#1B2433] rounded-lg font-mono text-xs space-y-2">
         <div class="text-[10px] text-[#38BDF8] uppercase font-bold tracking-wider">
           RUBRIC POINTS INTERVIEWER IS LISTENING FOR:
         </div>
@@ -110,7 +110,6 @@
   </div>
 </template>
 
-<script setup lang="ts">>
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { CheckCircle2, RefreshCw } from 'lucide-vue-next';
@@ -177,4 +176,3 @@ function handleCreateReviewCardFromMistake(): void {
   createdReviewCard.value = true;
 }
 </script>
-</template>

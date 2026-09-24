@@ -20,8 +20,18 @@ const isMutated = ref(false);
 const isFixApplied = ref(false);
 
 const isModule1_2 = computed(() => props.moduleId === '1.2');
+const isModule1_3 = computed(() => props.moduleId === '1.3');
 
 function getInitialLogs(): string[] {
+  if (isModule1_3.value) {
+    return [
+      '> Initializing Pattern Matching Dispatcher (DomainEvent)...',
+      '> Sealed interface: DomainEvent permits OrderEvent, PaymentEvent, SecurityAlert',
+      '> Vulnerability check 1: Subtype dominance order in switch cases',
+      '> Vulnerability check 2: Selector expression evaluation on null event payloads',
+      '> Ready to test dispatch: null payload and dominated case labels...',
+    ];
+  }
   if (isModule1_2.value) {
     return [
       '> Initializing Sealed Hierarchy Simulator (PaymentResult)...',
@@ -52,7 +62,15 @@ watch(
 
 function triggerMutation() {
   isMutated.value = true;
-  if (isModule1_2.value) {
+  if (isModule1_3.value) {
+    executionLogs.value.push(
+      '> Dispatching: TransactionEventDispatcher.dispatch(null);',
+      '> 💥 OBSERVATION: java.lang.NullPointerException thrown at runtime at switch selector expression!',
+      '> ❌ Missing "case null ->" branch caused crash in production event consumer!',
+      '> Testing compilation: case CharSequence cs -> ... before case String s -> ...',
+      '> 💥 javac error: "this case label is dominated by a preceding case label" (unreachable code)'
+    );
+  } else if (isModule1_2.value) {
     executionLogs.value.push(
       '> Domain evolved: Adding new variant `record FraudSuspended(...) implements PaymentResult` to permits.',
       '> Dispatching: routePayment(new FraudSuspended("TX-999", "CRITICAL_FRAUD_SCORE"))',
@@ -71,7 +89,16 @@ function triggerMutation() {
 
 function applyDefensiveCopyFix() {
   isFixApplied.value = true;
-  if (isModule1_2.value) {
+  if (isModule1_3.value) {
+    executionLogs.value.push(
+      '> Applying fix: Adding explicit "case null -> IGNORED" and reordering guarded/specific patterns...',
+      '> Re-ordering: Guarded record patterns and String placed before general CharSequence/Object patterns.',
+      '> Re-running dispatch(null):',
+      '> ✅ OBSERVATION: Safely routed to "IGNORED: Received null event payload" with ZERO NPE.',
+      '> ✅ Verified: javac compiles cleanly with strict dominance ordering and record deconstruction.',
+      '> 🎉 FAILURE LAB COMPLETED: Pattern dominance resolved & null safety verified.'
+    );
+  } else if (isModule1_2.value) {
     executionLogs.value.push(
       '> Applying fix: Removing default branch and converting to exhaustive switch expression...',
       '> Re-compiling: javac now verifies total variant coverage across all permitted subtypes.',
@@ -116,7 +143,8 @@ defineExpose({
       <div class="flex items-center gap-2">
         <AlertTriangle class="w-4 h-4 text-[#EF4444]" />
         <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-[#EF4444]">
-          <span v-if="isModule1_2">INTERACTIVE BREAK LAB: SILENT VARIANT FALL-THROUGH TRACE</span>
+          <span v-if="isModule1_3">INTERACTIVE BREAK LAB: DOMINANCE TRAP & NULL PAYLOAD NPE</span>
+          <span v-else-if="isModule1_2">INTERACTIVE BREAK LAB: SILENT VARIANT FALL-THROUGH TRACE</span>
           <span v-else>INTERACTIVE BREAK LAB: HEAP MUTATION TRACE</span>
         </h4>
       </div>
@@ -127,7 +155,18 @@ defineExpose({
 
     <!-- Stepper instructions -->
     <div class="text-xs text-[#CBD5E1] space-y-1 leading-relaxed">
-      <template v-if="isModule1_2">
+      <template v-if="isModule1_3">
+        <p v-if="currentStep === 1">
+          <strong>Step 1:</strong> The event router dispatches polymorphic events. Click below to simulate sending a <code class="text-[#EF4444]">null</code> event payload and compiling an inverted pattern dominance hierarchy.
+        </p>
+        <p v-else-if="currentStep === 2">
+          <strong>Step 2:</strong> Notice how the runtime selector immediately crashes with <code class="text-[#EF4444]">NullPointerException</code>, while the compiler rejects dominated cases! Now apply the null-safe, correctly ordered pattern switch.
+        </p>
+        <p v-else>
+          <strong>Step 3:</strong> Verification complete! Null payloads are cleanly intercepted via <code class="text-[#22C55E]">case null</code>, and pattern dominance satisfies javac.
+        </p>
+      </template>
+      <template v-else-if="isModule1_2">
         <p v-if="currentStep === 1">
           <strong>Step 1:</strong> The payment processor uses a switch with a <code class="text-[#EF4444]">default:</code> branch. Click below to simulate domain evolution when a new <code class="text-[#38BDF8]">FraudSuspended</code> variant is introduced.
         </p>
@@ -170,7 +209,8 @@ defineExpose({
         @click="triggerMutation"
       >
         <Play class="w-3.5 h-3.5" />
-        <span v-if="isModule1_2">SIMULATE NEW DOMAIN VARIANT</span>
+        <span v-if="isModule1_3">SIMULATE NULL & DOMINANCE TRAP</span>
+        <span v-else-if="isModule1_2">SIMULATE NEW DOMAIN VARIANT</span>
         <span v-else>SIMULATE EXTERNAL MUTATION</span>
       </button>
 
@@ -182,7 +222,8 @@ defineExpose({
         @click="applyDefensiveCopyFix"
       >
         <ShieldCheck class="w-3.5 h-3.5" />
-        <span v-if="isModule1_2">ENFORCE EXHAUSTIVE SWITCH</span>
+        <span v-if="isModule1_3">APPLY NULL-SAFE PATTERN SWITCH</span>
+        <span v-else-if="isModule1_2">ENFORCE EXHAUSTIVE SWITCH</span>
         <span v-else>APPLY DEFENSIVE COPY FIX</span>
       </button>
 

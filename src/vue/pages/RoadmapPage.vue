@@ -164,16 +164,16 @@ function handleSetCurrentDay(dayNumber: number): void {
     </PageHeader>
 
     <!-- Phase Filter Bar -->
-    <div class="bg-[#111622] border border-[#1E293B] rounded-lg p-3">
+    <div class="bg-[#101623] border border-[#1B2433] rounded-lg p-3">
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
         <button
           type="button"
           data-testid="phase-filter-0"
           :class="[
-            'p-2.5 rounded text-left border transition-all text-xs font-mono cursor-pointer',
+            'p-2.5 rounded-md text-left border transition-all text-xs font-mono cursor-pointer',
             selectedPhase === 0
               ? 'bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/40 font-semibold shadow-sm'
-              : 'bg-[#151B28] text-[#94A3B8] border-[#1E293B] hover:border-[#334155] hover:text-[#F8FAFC]',
+              : 'bg-[#151D2C] text-[#94A3B8] border-[#1B2433] hover:border-[#334155] hover:text-[#F1F5F9]',
           ]"
           @click="selectPhase(0)"
         >
@@ -187,10 +187,10 @@ function handleSetCurrentDay(dayNumber: number): void {
           type="button"
           :data-testid="`phase-filter-${p.number}`"
           :class="[
-            'p-2.5 rounded text-left border transition-all text-xs font-mono cursor-pointer',
+            'p-2.5 rounded-md text-left border transition-all text-xs font-mono cursor-pointer',
             selectedPhase === p.number
               ? 'bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/40 font-semibold shadow-sm'
-              : 'bg-[#151B28] text-[#94A3B8] border-[#1E293B] hover:border-[#334155] hover:text-[#F8FAFC]',
+              : 'bg-[#151D2C] text-[#94A3B8] border-[#1B2433] hover:border-[#334155] hover:text-[#F1F5F9]',
           ]"
           @click="selectPhase(p.number)"
         >
@@ -224,10 +224,10 @@ function handleSetCurrentDay(dayNumber: number): void {
           :class="[
             'cursor-pointer rounded-lg p-4 transition-all border select-none',
             day.dayNumber === store.currentDay
-              ? 'bg-[#111622] border-[#38BDF8]/60 ring-1 ring-[#38BDF8]/30 shadow-md'
+              ? 'bg-[#101623] border-[#38BDF8]/60 ring-1 ring-[#38BDF8]/30 shadow-md'
               : day.dayNumber === selectedDayDetail
-              ? 'bg-[#111622] border-[#38BDF8]/40 shadow-sm'
-              : 'bg-[#111622] border-[#1E293B] hover:border-[#334155]',
+              ? 'bg-[#101623] border-[#38BDF8]/40 shadow-sm'
+              : 'bg-[#101623] border-[#1B2433] hover:border-[#334155]',
           ]"
           @click="selectDay(day.dayNumber)"
         >

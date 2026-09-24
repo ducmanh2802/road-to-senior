@@ -312,7 +312,7 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
         :class="{ 'border-[#38BDF8]/40 ring-1 ring-[#38BDF8]/20': isItemCompleted(item.id) }"
       >
         <!-- Card Header Banner -->
-        <div class="p-4 sm:p-5 flex items-start justify-between gap-3 border-b border-[#1E293B]/60">
+        <div class="p-4 sm:p-5 flex items-start justify-between gap-3 border-b border-[#1B2433]">
           <div class="space-y-1.5 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
               <span
@@ -320,7 +320,7 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
                 :class="{
                   'bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/30': item.difficulty === 'MID',
                   'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30': item.difficulty === 'SENIOR',
-                  'bg-[#EC4899]/10 text-[#EC4899] border-[#EC4899]/30': item.difficulty === 'STAFF',
+                  'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30': item.difficulty === 'STAFF',
                 }"
               >
                 {{ item.difficulty }}
@@ -340,7 +340,7 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
               </span>
             </div>
 
-            <h3 class="text-base sm:text-lg font-bold text-[#F8FAFC] tracking-tight">
+            <h3 class="text-base sm:text-lg font-bold text-[#F1F5F9] tracking-tight">
               {{ item.title }}
             </h3>
 
@@ -355,10 +355,10 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
               type="button"
               :data-testid="`toggle-complete-${item.id}`"
               :aria-label="isItemCompleted(item.id) ? `Mark ${item.title} as incomplete` : `Mark ${item.title} as completed`"
-              class="px-2.5 py-1.5 rounded text-xs font-mono border transition-colors flex items-center gap-1.5 focus-ring"
+              class="px-2.5 py-1.5 rounded-md text-xs font-mono border transition-colors flex items-center gap-1.5 focus-ring cursor-pointer"
               :class="isItemCompleted(item.id)
-                ? 'bg-[#22C55E]/20 border-[#22C55E]/40 text-[#22C55E] hover:bg-[#22C55E]/30'
-                : 'bg-[#151B28] border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#38BDF8]/40'"
+                ? 'bg-[#22C55E]/15 border-[#22C55E]/40 text-[#22C55E] hover:bg-[#22C55E]/25'
+                : 'bg-[#151D2C] border-[#1B2433] text-[#94A3B8] hover:text-[#F1F5F9] hover:border-[#38BDF8]/40'"
               @click="toggleItemCompletion(item.id)"
             >
               <Check class="w-3.5 h-3.5" aria-hidden="true" />
@@ -369,7 +369,7 @@ Model Adapter (Ports &amp; Adapters, Virtual Threads, Resilience4j)
               type="button"
               :data-testid="`toggle-expand-${item.id}`"
               :aria-label="expandedItemIds[item.id] ? `Collapse ${item.title}` : `Expand ${item.title}`"
-              class="p-1.5 rounded text-[#64748B] hover:text-white hover:bg-[#1E293B] focus-ring"
+              class="p-1.5 rounded text-[#64748B] hover:text-[#F1F5F9] hover:bg-[#151D2C] focus-ring cursor-pointer"
               @click="toggleCardExpansion(item.id)"
             >
               <ChevronUp v-if="expandedItemIds[item.id]" class="w-4 h-4" aria-hidden="true" />

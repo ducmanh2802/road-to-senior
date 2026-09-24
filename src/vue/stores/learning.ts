@@ -5,10 +5,6 @@ import { ref, computed } from 'vue';
 import type {
   LearningTask,
   TaskState,
-<<<<<<< HEAD
-=======
-  TaskCategory,
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
   RoadmapDay,
   KnowledgeTopic,
   ReviewCard,
@@ -31,8 +27,6 @@ import {
   INITIAL_INTERVIEW_QUESTIONS,
 } from '../../data/seedData';
 import { calculateCompetencies, findWeakestDimension } from '../../engines/competency';
-import { calculateSm2Review } from '../../engines/sm2';
-import type { ReviewGrade } from '../../types';
 
 export const STORAGE_KEY = 'SENIOR_JAVA_180_STATE_V1';
 
@@ -56,9 +50,7 @@ export const useLearningStore = defineStore('learning', () => {
   const dsaProblems = ref<DSAProblem[]>([]);
   const projectFeatures = ref<ProjectFeature[]>([]);
   const incidents = ref<IncidentScenario[]>([]);
-<<<<<<< HEAD
   const interviewQuestions = ref<InterviewQuestion[]>([...INITIAL_INTERVIEW_QUESTIONS]);
-=======
   const completedAiTopicIds = ref<string[]>([]);
   const completedEnglishItemIds = ref<string[]>([]);
   // P0 Java Core Tracking: completed module IDs (only when assessment >= 80% and failure lab completed)
@@ -67,7 +59,6 @@ export const useLearningStore = defineStore('learning', () => {
   const javaModuleStageProgress = ref<Record<string, string[]>>({});
   // Module assessment scores
   const javaModuleAssessmentScores = ref<Record<string, number>>({});
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
 
   const status = ref<'loading' | 'error' | 'empty' | 'success'>('loading');
   const errorMessage = ref<string | null>(null);
@@ -86,15 +77,12 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems: dsaProblems.value,
         projectFeatures: projectFeatures.value,
         incidents: incidents.value,
-<<<<<<< HEAD
         interviewQuestions: interviewQuestions.value,
-=======
         completedAiTopicIds: completedAiTopicIds.value,
         completedEnglishItemIds: completedEnglishItemIds.value,
         completedJavaModuleIds: completedJavaModuleIds.value,
         javaModuleStageProgress: javaModuleStageProgress.value,
         javaModuleAssessmentScores: javaModuleAssessmentScores.value,
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -113,15 +101,12 @@ export const useLearningStore = defineStore('learning', () => {
     dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
     projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
     incidents.value = [...INITIAL_INCIDENTS];
-<<<<<<< HEAD
     interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
-=======
     completedAiTopicIds.value = [];
     completedEnglishItemIds.value = [];
     completedJavaModuleIds.value = [];
     javaModuleStageProgress.value = {};
     javaModuleAssessmentScores.value = {};
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
@@ -147,17 +132,14 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = Array.isArray(parsed.dsaProblems) ? parsed.dsaProblems : [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = Array.isArray(parsed.projectFeatures) ? parsed.projectFeatures : [...INITIAL_PROJECT_FEATURES];
         incidents.value = Array.isArray(parsed.incidents) ? parsed.incidents : [...INITIAL_INCIDENTS];
-<<<<<<< HEAD
         interviewQuestions.value = Array.isArray(parsed.interviewQuestions)
           ? parsed.interviewQuestions
           : [...INITIAL_INTERVIEW_QUESTIONS];
-=======
         completedAiTopicIds.value = Array.isArray(parsed.completedAiTopicIds) ? parsed.completedAiTopicIds : [];
         completedEnglishItemIds.value = Array.isArray(parsed.completedEnglishItemIds) ? parsed.completedEnglishItemIds : [];
         completedJavaModuleIds.value = Array.isArray(parsed.completedJavaModuleIds) ? parsed.completedJavaModuleIds : [];
         javaModuleStageProgress.value = (parsed.javaModuleStageProgress && typeof parsed.javaModuleStageProgress === 'object') ? parsed.javaModuleStageProgress : {};
         javaModuleAssessmentScores.value = (parsed.javaModuleAssessmentScores && typeof parsed.javaModuleAssessmentScores === 'object') ? parsed.javaModuleAssessmentScores : {};
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -170,15 +152,12 @@ export const useLearningStore = defineStore('learning', () => {
         dsaProblems.value = [...INITIAL_DSA_PROBLEMS];
         projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
         incidents.value = [...INITIAL_INCIDENTS];
-<<<<<<< HEAD
         interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
-=======
         completedAiTopicIds.value = [];
         completedEnglishItemIds.value = [];
         completedJavaModuleIds.value = [];
         javaModuleStageProgress.value = {};
         javaModuleAssessmentScores.value = {};
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
         saveToStorage();
       }
 
@@ -205,16 +184,17 @@ export const useLearningStore = defineStore('learning', () => {
    */
   function addTask(
     task: Pick<LearningTask, 'title' | 'description' | 'category' | 'estimatedMinutes'> &
-      Partial<Pick<LearningTask, 'dayNumber' | 'notes' | 'codeSnippet' | 'externalLink'>>
-  ): void {
+      Partial<Pick<LearningTask, 'dayNumber' | 'state' | 'notes' | 'codeSnippet' | 'externalLink'>>
+  ): LearningTask {
     const newTask: LearningTask = {
       ...task,
       id: 'task-' + Date.now(),
       dayNumber: task.dayNumber ?? currentDay.value,
-      state: 'TODO',
+      state: task.state ?? 'TODO',
     };
     tasks.value = [newTask, ...tasks.value];
     saveToStorage();
+    return newTask;
   }
 
   function setTaskState(taskId: string, state: TaskState): void {
@@ -380,101 +360,6 @@ export const useLearningStore = defineStore('learning', () => {
       actionLabel: 'Launch System Design',
     };
   });
-
-  function setTaskState(taskId: string, state: TaskState): void {
-    tasks.value = tasks.value.map((t) => {
-      if (t.id === taskId) {
-        const isNowCompleted = state === 'COMPLETED';
-        return {
-          ...t,
-          state,
-          completedAt: isNowCompleted ? new Date().toISOString() : undefined,
-        };
-      }
-      return t;
-    });
-    saveToStorage();
-  }
-
-  function addTask(taskData: {
-    title: string;
-    description?: string;
-    category?: TaskCategory;
-    estimatedMinutes?: number;
-    state?: TaskState;
-    dayNumber?: number;
-    notes?: string;
-    codeSnippet?: string;
-    externalLink?: string;
-  }): LearningTask {
-    const newTask: LearningTask = {
-      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      dayNumber: taskData.dayNumber ?? currentDay.value,
-      title: taskData.title,
-      category: taskData.category ?? 'HANDS_ON',
-      description: taskData.description ?? '',
-      estimatedMinutes: taskData.estimatedMinutes ?? 30,
-      state: taskData.state ?? 'TODO',
-      notes: taskData.notes,
-      codeSnippet: taskData.codeSnippet,
-      externalLink: taskData.externalLink,
-    };
-    tasks.value = [newTask, ...tasks.value];
-    saveToStorage();
-    return newTask;
-  }
-
-  function updateTaskNotes(taskId: string, notes: string): void {
-    tasks.value = tasks.value.map((t) => (t.id === taskId ? { ...t, notes } : t));
-    saveToStorage();
-  }
-
-  function recordReviewAnswer(cardId: string, grade: ReviewGrade, durationSec: number): void {
-    reviewCards.value = reviewCards.value.map((card) => {
-      if (card.id !== cardId) return card;
-
-      const sm2Result = calculateSm2Review(card, grade);
-
-      return {
-        ...card,
-        ...sm2Result,
-        history: [
-          ...card.history,
-          {
-            date: sm2Result.lastReviewedAt,
-            grade,
-            durationSec,
-          },
-        ],
-      };
-    });
-    saveToStorage();
-  }
-
-  function createReviewCardFromMistake(
-    question: string,
-    expectedAnswer: string,
-    category: string,
-    codeExample?: string,
-    explanation?: string
-  ): ReviewCard {
-    const newCard: ReviewCard = {
-      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      question,
-      expectedAnswer,
-      category,
-      codeExample,
-      explanation,
-      intervalDays: 1,
-      repetitionCount: 0,
-      easeFactor: 2.5,
-      nextReviewAt: new Date().toISOString(),
-      history: [],
-    };
-    reviewCards.value = [newCard, ...reviewCards.value];
-    saveToStorage();
-    return newCard;
-  }
 
   function setCurrentDay(day: number): void {
     if (day >= 1 && day <= 180) {
@@ -660,12 +545,9 @@ export const useLearningStore = defineStore('learning', () => {
     loadFromStorage,
     resetToDemo,
     saveToStorage,
-<<<<<<< HEAD
-=======
     setCurrentDay,
     exportDataAsJson,
     importDataFromJson,
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     addTask,
     setTaskState,
     updateTaskNotes,

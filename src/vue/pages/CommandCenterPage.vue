@@ -91,7 +91,7 @@ const taskCompletionPct = computed(() =>
     <!-- 4. SUCCESS / MAIN DASHBOARD -->
     <div v-else class="space-y-6" data-testid="command-center-content">
       <!-- 5-Second System Status Card -->
-      <section class="ui-panel p-5 border-[#1E293B]" aria-labelledby="system-status-heading">
+      <section class="ui-panel p-5 border-[#1B2433]" aria-labelledby="system-status-heading">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div class="space-y-1.5">
             <div class="flex items-center gap-2 text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold">
@@ -101,16 +101,16 @@ const taskCompletionPct = computed(() =>
                 Phase 2: Spring Boot 3 & Microservices
               </span>
             </div>
-            <h1 class="text-xl sm:text-2xl font-bold text-[#F8FAFC] tracking-tight">
+            <h1 class="text-xl sm:text-2xl font-bold text-[#F1F5F9] tracking-tight">
               DAY {{ store.currentDay.toString().padStart(2, '0') }} · {{ store.daysRemaining }} Days Remaining
             </h1>
             <p class="text-xs sm:text-sm text-[#94A3B8] max-w-2xl leading-relaxed">
-              Today's core target: <span class="text-[#F8FAFC] font-medium">CompletableFuture Asynchronous Pipelines & @Transactional Pitfalls</span>.
+              Today's core target: <span class="text-[#F1F5F9] font-medium">CompletableFuture Asynchronous Pipelines & @Transactional Pitfalls</span>.
             </p>
           </div>
 
           <!-- Recommended Next Action Box -->
-          <div class="lg:w-80 w-full bg-[#0B0E14] border border-[#1E293B] rounded-lg p-3.5 flex flex-col justify-between shrink-0">
+          <div class="lg:w-80 w-full bg-[#0A0E17] border border-[#1B2433] rounded-lg p-3.5 flex flex-col justify-between shrink-0">
             <div class="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
               <span class="uppercase font-semibold text-[#38BDF8] flex items-center gap-1">
                 <Zap class="w-3 h-3 text-[#38BDF8]" aria-hidden="true" />
@@ -118,7 +118,7 @@ const taskCompletionPct = computed(() =>
               </span>
               <span class="text-[#94A3B8]">PRIORITY #1</span>
             </div>
-            <div class="text-xs font-semibold text-[#F8FAFC] mt-1.5 truncate" data-testid="next-action-title">
+            <div class="text-xs font-semibold text-[#F1F5F9] mt-1.5 truncate" data-testid="next-action-title">
               {{ store.nextAction.title }}
             </div>
             <div class="text-[11px] text-[#94A3B8] mt-0.5 truncate">
@@ -126,7 +126,7 @@ const taskCompletionPct = computed(() =>
             </div>
             <button
               type="button"
-              class="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-[#38BDF8] text-[#0B0E14] text-xs font-semibold hover:bg-[#0EA5E9] focus-ring transition-colors cursor-pointer"
+              class="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-[#38BDF8] text-[#0A0E17] text-xs font-semibold hover:bg-[#0284C7] focus-ring transition-colors cursor-pointer"
               data-testid="next-action-button"
               @click="navigate(store.nextAction.targetRoute)"
             >

@@ -38,6 +38,7 @@ import {
   JAVA_CORE_MODULES_METADATA,
   MODULE_1_1_CONTENT,
   MODULE_1_2_CONTENT,
+  MODULE_1_3_CONTENT,
   type JavaCoreModuleMetadata,
   type JavaCorePillar,
   type EngineeringLoopStage,
@@ -86,6 +87,7 @@ const currentModule = computed(() => {
 const activeModuleContent = computed<ModuleContent | null>(() => {
   if (selectedModuleId.value === '1.1') return MODULE_1_1_CONTENT;
   if (selectedModuleId.value === '1.2') return MODULE_1_2_CONTENT;
+  if (selectedModuleId.value === '1.3') return MODULE_1_3_CONTENT;
   return null;
 });
 
@@ -208,7 +210,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
     </section>
 
     <!-- Module Selector Carousel / Grid -->
-    <section class="rounded-xl border border-[#1E293B] bg-[#111622] p-3 space-y-2" aria-label="Java Core Roadmap Modules">
+    <section class="rounded-lg border border-[#1B2433] bg-[#101623] p-3 space-y-2" aria-label="Java Core Roadmap Modules">
       <div class="flex items-center justify-between text-xs font-mono px-1">
         <span class="text-[#94A3B8] uppercase">P0 Curriculum Roadmap</span>
         <span class="text-[11px] text-[#38BDF8]">
@@ -224,24 +226,24 @@ function selectModule(mod: JavaCoreModuleMetadata) {
           role="tab"
           :aria-selected="selectedModuleId === mod.id"
           :disabled="mod.status === 'LOCKED'"
-          class="px-3 py-2 rounded-lg transition-all whitespace-nowrap text-xs font-mono border flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          class="px-3 py-1.5 rounded-md transition-all whitespace-nowrap text-xs font-mono border flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           :class="[
             selectedModuleId === mod.id
-              ? 'bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/40 font-bold shadow-xs'
+              ? 'bg-[#151D2C] text-[#38BDF8] border-[#38BDF8]/40 font-semibold'
               : mod.status === 'LOCKED'
-              ? 'bg-[#0B0E14] text-[#64748B] border-[#1E293B]'
-              : 'bg-[#151B28] text-[#94A3B8] border-[#1E293B] hover:border-[#38BDF8]/30 hover:text-[#F8FAFC]',
+              ? 'bg-[#0A0E17] text-[#64748B] border-[#1B2433]'
+              : 'bg-[#151D2C] text-[#94A3B8] border-[#1B2433] hover:border-[#38BDF8]/30 hover:text-[#F1F5F9]',
           ]"
           :data-testid="`module-tab-${mod.id}`"
           @click="selectModule(mod)"
         >
           <Lock v-if="mod.status === 'LOCKED'" class="w-3 h-3 text-[#64748B]" />
           <CheckCircle2 v-else-if="learningStore.isJavaModuleCompleted(mod.id)" class="w-3 h-3 text-[#22C55E]" />
-          <span class="font-bold">{{ mod.number }}</span>
+          <span class="font-semibold">{{ mod.number }}</span>
           <span>{{ mod.title }}</span>
           <span
             v-if="mod.status === 'LOCKED'"
-            class="text-[9px] px-1 py-0.2 rounded bg-[#1E293B] text-[#94A3B8]"
+            class="text-[9px] px-1 py-0.2 rounded bg-[#1B2433] text-[#64748B]"
           >
             LOCKED
           </span>
@@ -252,19 +254,19 @@ function selectModule(mod: JavaCoreModuleMetadata) {
     <!-- If Module is Active & Implemented (1.1, 1.2): Full 11-Stage Interactive Loop -->
     <div v-if="activeModuleContent" class="space-y-6" :data-testid="`module-${currentModule.id.replace('.', '-')}-content`">
       <!-- 11-Stage Senior Engineering Loop Navigation Bar -->
-      <section class="rounded-xl border border-[#1E293B] bg-[#0B0E14] p-1.5 overflow-x-auto" aria-label="Learning Loop Stages">
-        <div class="flex items-center gap-1.5 min-w-max" role="tablist" aria-label="11 Learning Stages">
+      <section class="rounded-lg border border-[#1B2433] bg-[#0A0E17] p-1.5 overflow-x-auto" aria-label="Learning Loop Stages">
+        <div class="flex items-center gap-1 min-w-max" role="tablist" aria-label="11 Learning Stages">
           <button
             v-for="stage in stages"
             :key="stage.id"
             type="button"
             role="tab"
             :aria-selected="activeStage === stage.id"
-            class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-mono text-xs transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+            class="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md font-mono text-xs transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
             :class="[
               activeStage === stage.id
-                ? 'bg-[#38BDF8] text-[#020617] font-bold shadow-sm'
-                : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#151B28]',
+                ? 'bg-[#38BDF8] text-[#0A0E17] font-semibold'
+                : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C]',
             ]"
             :data-testid="`stage-tab-${stage.id}`"
             @click="activeStage = stage.id"
@@ -277,7 +279,7 @@ function selectModule(mod: JavaCoreModuleMetadata) {
 
       <!-- Main Stage Content Area -->
       <main
-        class="rounded-xl border border-[#1E293B] bg-[#111622] p-6 space-y-6 min-h-[460px]"
+        class="rounded-lg border border-[#1B2433] bg-[#101623] p-6 space-y-6 min-h-[460px]"
         role="tabpanel"
         data-testid="stage-content-panel"
       >
@@ -335,6 +337,32 @@ function selectModule(mod: JavaCoreModuleMetadata) {
             <p class="text-xs text-[#38BDF8] font-mono pt-1">
               💡 {{ activeModuleContent.learn.domainModelDistinctions.patternExhaustiveness }}
             </p>
+          </div>
+
+          <!-- Module 1.3 Specific Distinction -->
+          <div v-if="activeModuleContent.learn.patternMatchingDistinctions" class="p-4 rounded-xl border border-[#A855F7]/30 bg-[#A855F7]/10 space-y-2">
+            <div class="flex items-center gap-2 text-xs font-mono font-bold text-[#C084FC] uppercase">
+              <Zap class="w-4 h-4" />
+              <span>PATTERN MATCHING, RECORD DECONSTRUCTION & WHEN GUARDS</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#CBD5E1]">
+              <div class="p-3 bg-[#0B0E14] rounded-lg border border-[#1E293B]">
+                <strong class="text-[#F8FAFC] block mb-1">Type Pattern Matching:</strong>
+                {{ activeModuleContent.learn.patternMatchingDistinctions.typePattern }}
+              </div>
+              <div class="p-3 bg-[#0B0E14] rounded-lg border border-[#1E293B]">
+                <strong class="text-[#F8FAFC] block mb-1">Record Deconstruction:</strong>
+                {{ activeModuleContent.learn.patternMatchingDistinctions.recordPattern }}
+              </div>
+              <div class="p-3 bg-[#0B0E14] rounded-lg border border-[#1E293B]">
+                <strong class="text-[#F8FAFC] block mb-1">Guarded When Clauses:</strong>
+                {{ activeModuleContent.learn.patternMatchingDistinctions.whenGuards }}
+              </div>
+              <div class="p-3 bg-[#0B0E14] rounded-lg border border-[#1E293B]">
+                <strong class="text-[#F8FAFC] block mb-1">Null-Safe Switch Branches:</strong>
+                {{ activeModuleContent.learn.patternMatchingDistinctions.nullHandling }}
+              </div>
+            </div>
           </div>
 
           <!-- Key Points Grid -->

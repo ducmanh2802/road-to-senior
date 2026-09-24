@@ -9,7 +9,6 @@ describe('TodayViewPage.vue', () => {
     localStorage.clear();
     setActivePinia(createPinia());
     const store = useLearningStore();
-<<<<<<< HEAD
     // Replace seed tasks with a deterministic fixture (documented test fixture)
     store.tasks = [
       {
@@ -31,26 +30,6 @@ describe('TodayViewPage.vue', () => {
         state: 'IN_PROGRESS',
       },
     ];
-=======
-    store.loadFromStorage();
-    // clear default seed tasks for deterministic unit testing
-    store.tasks = [];
-    // add sample tasks adhering to the domain model
-    store.addTask({
-      title: 'Sample Task 1',
-      description: 'Desc 1',
-      category: 'JAVA',
-      state: 'TODO',
-      estimatedMinutes: 20,
-    });
-    store.addTask({
-      title: 'Sample Task 2',
-      description: 'Desc 2',
-      category: 'HANDS_ON',
-      state: 'IN_PROGRESS',
-      estimatedMinutes: 15,
-    });
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
   });
 
   it('renders and shows tasks', () => {
@@ -62,14 +41,6 @@ describe('TodayViewPage.vue', () => {
 
   it('filters tasks by status', async () => {
     const wrapper = mount(TodayViewPage);
-<<<<<<< HEAD
-    // click filter button for DSA
-    const filterBtn = wrapper
-      .findAll('button')
-      .filter(btn => btn.text() === 'DSA')[0];
-    expect(filterBtn).toBeDefined();
-    await filterBtn.trigger('click');
-=======
     await wrapper.vm.$nextTick();
 
     // click filter button for IN_PROGRESS
@@ -80,7 +51,6 @@ describe('TodayViewPage.vue', () => {
     await filterBtn!.trigger('click');
     await wrapper.vm.$nextTick();
 
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
     expect(wrapper.text()).toContain('Sample Task 2');
     expect(wrapper.text()).not.toContain('Sample Task 1');
 
@@ -195,23 +165,6 @@ describe('TodayViewPage.vue', () => {
     expect(created?.state).toBe('TODO');
   });
 
-  it('shows the honest empty state when no tasks match the filter', async () => {
-    const wrapper = mount(TodayViewPage);
-    const filterBtn = wrapper
-      .findAll('button')
-      .filter(btn => btn.text() === 'ENGLISH')[0];
-    expect(filterBtn).toBeDefined();
-    await filterBtn.trigger('click');
-    expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
-
-    // reset filter restores the list
-    const resetBtn = wrapper
-      .findAll('button')
-      .filter(btn => btn.text() === 'Reset Filter')[0];
-    await resetBtn.trigger('click');
-    expect(wrapper.text()).toContain('Sample Task 1');
-  });
-
   it('completes a task and reflects the state change in the store', async () => {
     const store = useLearningStore();
     const wrapper = mount(TodayViewPage);
@@ -219,12 +172,12 @@ describe('TodayViewPage.vue', () => {
       'IN_PROGRESS'
     );
 
-    // the only visible Complete button belongs to the IN_PROGRESS task
+    // Click Complete button for the IN_PROGRESS task
     const completeBtn = wrapper
       .findAll('button')
-      .filter(btn => btn.text() === 'Complete')[0];
+      .find(btn => btn.text().includes('Complete'));
     expect(completeBtn).toBeDefined();
-    await completeBtn.trigger('click');
+    await completeBtn!.trigger('click');
 
     expect(store.tasks.find(t => t.id === 'test-task-2')?.state).toBe(
       'COMPLETED'

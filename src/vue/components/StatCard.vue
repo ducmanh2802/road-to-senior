@@ -56,7 +56,7 @@ const emit = defineEmits<{
 
     <div class="flex items-baseline justify-between gap-2 w-full">
       <div class="flex items-baseline gap-1.5">
-        <span class="text-xl sm:text-2xl font-bold font-mono text-[#F8FAFC] tracking-tight">
+        <span class="text-xl sm:text-2xl font-bold font-mono text-[#F1F5F9] tracking-tight">
           {{ value }}
         </span>
         <span v-if="subValue && !trend" class="text-xs font-mono text-[#64748B]">

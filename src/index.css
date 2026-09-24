@@ -5,32 +5,32 @@
     --font-mono: 'JetBrains Mono', monospace;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-    /* Semantic Design Tokens */
-    --bg: #0B0E14;
-    --surface: #111622;
-    --surface-elevated: #151B28;
-    --surface-hover: #1A2234;
-    --border: #1E293B;
-    --border-subtle: #162032;
+    /* Semantic Natural Product Design Tokens */
+    --bg: #0A0E17;
+    --surface: #101623;
+    --surface-elevated: #151D2C;
+    --surface-hover: #1A2436;
+    --border: #1B2433;
+    --border-subtle: #141B26;
     --border-focus: #38BDF8;
 
     --primary: #38BDF8;
-    --primary-hover: #0EA5E9;
-    --primary-subtle: rgba(56, 189, 248, 0.12);
+    --primary-hover: #0284C7;
+    --primary-subtle: rgba(56, 189, 248, 0.08);
 
     --success: #22C55E;
-    --success-subtle: rgba(34, 197, 94, 0.12);
+    --success-subtle: rgba(34, 197, 94, 0.08);
 
     --warning: #F59E0B;
-    --warning-subtle: rgba(245, 158, 11, 0.12);
+    --warning-subtle: rgba(245, 158, 11, 0.08);
 
     --danger: #EF4444;
-    --danger-subtle: rgba(239, 68, 68, 0.12);
+    --danger-subtle: rgba(239, 68, 68, 0.08);
 
-    --info: #60A5FA;
-    --info-subtle: rgba(96, 165, 250, 0.12);
+    --info: #38BDF8;
+    --info-subtle: rgba(56, 189, 248, 0.08);
 
-    --text-primary: #F8FAFC;
+    --text-primary: #F1F5F9;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
   }
@@ -40,6 +40,8 @@
     background-color: var(--bg);
     color: var(--text-primary);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   code, pre, .font-mono {
@@ -49,12 +51,12 @@
 
 /* Custom developer scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0E14;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -67,8 +69,8 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -77,35 +79,24 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #1E293B;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
-/* Terminal & Code Surface Utilities */
-.terminal-panel {
-  background-color: #111622;
-  border: 1px solid #1E293B;
-}
-
-.terminal-header {
-  background-color: #0B0E14;
-  border-bottom: 1px solid #1E293B;
-}
-
-/* Card & Panel Base Styles */
+/* Restrained Developer Surface Utilities */
 .ui-panel {
-  background-color: #111622;
-  border: 1px solid #1E293B;
-  border-radius: 6px;
+  background-color: #101623;
+  border: 1px solid #1B2433;
+  border-radius: 8px;
 }
 
 .ui-panel-elevated {
-  background-color: #151B28;
-  border: 1px solid #1E293B;
-  border-radius: 6px;
+  background-color: #151D2C;
+  border: 1px solid #1B2433;
+  border-radius: 8px;
 }
 
 /* Focus Rings */
@@ -114,6 +105,6 @@
 }
 .focus-ring:focus-visible {
   outline: 2px solid #38BDF8;
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 

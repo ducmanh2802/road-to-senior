@@ -39,18 +39,18 @@ const lines = computed(() => props.code.trim().split('\n'));
 </script>
 
 <template>
-  <div class="rounded-md border border-[#1E293B] bg-[#0B0E14] overflow-hidden font-mono text-xs">
-    <div class="px-3.5 py-2 bg-[#111622] border-b border-[#1E293B] flex items-center justify-between gap-2">
+  <div class="rounded-lg border border-[#1B2433] bg-[#0A0E17] overflow-hidden font-mono text-xs">
+    <div class="px-3.5 py-2 bg-[#101623] border-b border-[#1B2433] flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 text-[#94A3B8] truncate">
-        <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]/60 inline-block" />
-        <span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]/60 inline-block" />
-        <span class="w-2.5 h-2.5 rounded-full bg-[#22C55E]/60 inline-block" />
-        <span v-if="displayTitle" class="text-[#F8FAFC] font-medium ml-1 truncate">{{ displayTitle }}</span>
+        <span class="w-2 h-2 rounded-full bg-[#EF4444]/70 inline-block" />
+        <span class="w-2 h-2 rounded-full bg-[#F59E0B]/70 inline-block" />
+        <span class="w-2 h-2 rounded-full bg-[#22C55E]/70 inline-block" />
+        <span v-if="displayTitle" class="text-[#F1F5F9] font-medium ml-1 truncate">{{ displayTitle }}</span>
         <span class="text-[10px] uppercase text-[#64748B] ml-1">[{{ language }}]</span>
       </div>
       <button
         type="button"
-        class="flex items-center gap-1 text-[11px] text-[#94A3B8] hover:text-[#38BDF8] transition-colors p-1 rounded hover:bg-[#1E293B] cursor-pointer"
+        class="flex items-center gap-1 text-[11px] text-[#94A3B8] hover:text-[#38BDF8] transition-colors p-1 rounded hover:bg-[#151D2C] cursor-pointer"
         title="Copy code to clipboard"
         @click="handleCopy"
       >

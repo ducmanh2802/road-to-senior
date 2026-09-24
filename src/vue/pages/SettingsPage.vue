@@ -86,8 +86,8 @@ function handleReset(): void {
     />
 
     <!-- Active Day Override -->
-    <div class="rounded-lg border border-[#1E293B] bg-[#111622] p-5 space-y-3" data-testid="settings-day-card">
-      <h2 class="text-base font-bold text-[#E5E7EB] flex items-center gap-2">
+    <div class="rounded-lg border border-[#1B2433] bg-[#101623] p-5 space-y-3" data-testid="settings-day-card">
+      <h2 class="text-base font-bold text-[#F1F5F9] flex items-center gap-2">
         <Calendar class="w-4 h-4 text-[#38BDF8]" aria-hidden="true" />
         <span>Active Day Override</span>
       </h2>
@@ -102,13 +102,13 @@ function handleReset(): void {
             type="number"
             min="1"
             max="180"
-            class="w-full rounded bg-[#0B0E14] border border-[#1E293B] px-3 py-1.5 text-xs font-mono text-white focus-ring"
+            class="w-full rounded-md bg-[#0A0E17] border border-[#1B2433] px-3 py-1.5 text-xs font-mono text-[#F1F5F9] focus-ring"
             aria-label="Active Day Input"
           />
         </div>
         <button
           type="submit"
-          class="rounded bg-[#38BDF8] px-3.5 py-1.5 text-xs font-mono font-semibold text-[#0B0E14] hover:bg-[#0284C7] focus-ring"
+          class="rounded-md bg-[#38BDF8] px-3.5 py-1.5 text-xs font-mono font-semibold text-[#0A0E17] hover:bg-[#0284C7] focus-ring cursor-pointer"
         >
           Update Day
         </button>
@@ -124,8 +124,8 @@ function handleReset(): void {
     </div>
 
     <!-- Data Backup & State Migration -->
-    <div class="rounded-lg border border-[#1E293B] bg-[#111622] p-5 space-y-4" data-testid="settings-backup-card">
-      <h2 class="text-base font-bold text-[#E5E7EB] flex items-center gap-2">
+    <div class="rounded-lg border border-[#1B2433] bg-[#101623] p-5 space-y-4" data-testid="settings-backup-card">
+      <h2 class="text-base font-bold text-[#F1F5F9] flex items-center gap-2">
         <Database class="w-4 h-4 text-[#22C55E]" aria-hidden="true" />
         <span>Data Backup & State Migration</span>
       </h2>
@@ -133,7 +133,7 @@ function handleReset(): void {
       <div>
         <button
           type="button"
-          class="inline-flex items-center gap-2 rounded border border-[#38BDF8]/40 bg-[#38BDF8]/10 px-3.5 py-2 text-xs font-mono font-semibold text-[#38BDF8] hover:bg-[#38BDF8]/20 focus-ring"
+          class="inline-flex items-center gap-2 rounded-md border border-[#38BDF8]/40 bg-[#38BDF8]/10 px-3.5 py-2 text-xs font-mono font-semibold text-[#38BDF8] hover:bg-[#38BDF8]/20 focus-ring cursor-pointer"
           @click="handleExport"
         >
           <Download class="w-4 h-4" aria-hidden="true" />

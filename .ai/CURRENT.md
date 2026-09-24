@@ -6,8 +6,13 @@ Current frontend: Vue 3 (hard-cutover foundation, entry = src/vue/main.ts);
   React source retained as migration reference only
 Target frontend: Vue 3 + TypeScript + Vue Router + Pinia
 Backend: none (target: Java 25 / Spring Boot 4.1.x — NOT started)
-Current phase: Phase P0-1.2 completed — Sealed Classes & Exhaustive Pattern Matching
+Current phase: Phase P0-1.3 completed — Pattern Matching & Switch
 Completed phases:
+  - Phase P0-1.3 — Pattern Matching & Switch: LearningJavaPage.vue (/learning/java),
+    src/data/javaCoreCurriculum.ts (Module 1.3 full 11-stage engineering loop, record deconstruction,
+    nested type patterns, guarded when clauses, dominance ordering, explicit null handling,
+    TransactionEventDispatcher, JavaFailureLab null/dominance simulator, 11-question assessment),
+    164/164 unit tests PASS.
   - Phase P0-1.2 — Sealed Classes & Exhaustive Pattern Matching: LearningJavaPage.vue (/learning/java),
     src/data/javaCoreCurriculum.ts (Module 1.2 full 11-stage engineering loop, algebraic sum types,
     PaymentResult domain, JavaFailureLab variant fall-through simulator, 11-question assessment),
@@ -53,7 +58,6 @@ Completed phases:
     (20 new tests, 120/120 full suite PASS), quality pipeline PASS
 Active work: none
 
-<<<<<<< HEAD
 ## Phase 005–007 Status (Review slice)
 - Phase 005/007 — Review vertical slice: COMPLETE (commit 5d38001)
   - Real ReviewPage.vue replaces placeholder; /review route lazy-loads it
@@ -80,44 +84,6 @@ Active work: none
   - E2E: NOT AVAILABLE (Playwright planned, not installed)
 - Known limitations: Playwright not installed in environment; shared React components in src/components/ui/ retained for remaining unmigrated React views.
 - Next phase: Phase 004 — Next vertical slice migration (per .ai/ROADMAP.md)
-=======
-## Phase E01 Quality Gate Status
-- Phase: Phase E01 — Technical English for Senior Java
-- Status: PASS
-- Free Autonomous Quality Gate:
-  - TypeScript (tsc --noEmit): PASS (0 errors)
-  - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
-  - ESLint 9 (eslint .): PASS (0 errors)
-  - Vitest (vitest run): PASS (15 test files, 142/142 tests passing)
-  - Gitleaks (gitleaks detect): PASS (0 leaks found)
-  - Vite Build (vite build): PASS
-- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED, independent of Phase E01)
-
-## Phase AI-SJ Quality Gate Status
-- Phase: Phase AI-SJ — AI Knowledge Foundation for Senior Java
-- Status: PASS
-- Free Autonomous Quality Gate:
-  - TypeScript (tsc --noEmit): PASS (0 errors)
-  - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
-  - ESLint 9 (eslint .): PASS (0 errors)
-  - Vitest (vitest run): PASS (14 test files, 131/131 tests passing)
-  - Gitleaks (gitleaks detect): PASS (0 leaks found)
-  - Vite Build (vite build): PASS
-- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED, independent of Phase E01)
-
-## Phase 009 Quality Gate Status
-- Phase: Phase 009 — CodeBlock + Java 25 / Spring Boot 4.1
-- Status: PASS
-- Free Autonomous Quality Gate:
-  - TypeScript (tsc --noEmit): PASS (0 errors)
-  - Vue SFC (vue-tsc --noEmit): PASS (0 errors)
-  - ESLint 9 (eslint .): PASS (0 errors)
-  - Vitest (vitest run): PASS (13 test files, 120/120 tests passing)
-  - Gitleaks (gitleaks detect): PASS (0 leaks found)
-  - Coverage: COLLECTED (>93% CodeBlock.vue, 100% LearningJavaPage.vue, >84% overall)
-  - Vite Build (vite build): PASS
-- Next phase: Phase 010 — Microservices & Claude Code Labs (NOT STARTED)
->>>>>>> 1ab3ac4a430c6445910d92b0ffa3e384dead035f
 
 ## Protected Areas
 

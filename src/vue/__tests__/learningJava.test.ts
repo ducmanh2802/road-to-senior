@@ -16,6 +16,7 @@ import {
   JAVA_CORE_MODULES_METADATA,
   MODULE_1_1_CONTENT,
   MODULE_1_2_CONTENT,
+  MODULE_1_3_CONTENT,
 } from '../../data/javaCoreCurriculum';
 import { useLearningStore } from '../stores/learning';
 
@@ -31,15 +32,18 @@ describe('P0 Java Core Roadmap Metadata & Integrity', () => {
     expect(jvmModules.length).toBe(6);
     expect(concurrencyModules.length).toBe(7);
 
-    // Module 1.1 and 1.2 are active / NOT_STARTED
+    // Module 1.1, 1.2, and 1.3 are active / NOT_STARTED
     expect(JAVA_CORE_MODULES_METADATA[0].id).toBe('1.1');
     expect(JAVA_CORE_MODULES_METADATA[0].status).toBe('NOT_STARTED');
 
     expect(JAVA_CORE_MODULES_METADATA[1].id).toBe('1.2');
     expect(JAVA_CORE_MODULES_METADATA[1].status).toBe('NOT_STARTED');
 
-    // Modules 1.3 to 3.7 must remain LOCKED
-    for (let i = 2; i < JAVA_CORE_MODULES_METADATA.length; i++) {
+    expect(JAVA_CORE_MODULES_METADATA[2].id).toBe('1.3');
+    expect(JAVA_CORE_MODULES_METADATA[2].status).toBe('NOT_STARTED');
+
+    // Modules 1.4 to 3.7 must remain LOCKED
+    for (let i = 3; i < JAVA_CORE_MODULES_METADATA.length; i++) {
       const mod = JAVA_CORE_MODULES_METADATA[i];
       expect(mod.status).toBe('LOCKED');
       expect(mod.learningObjective).toBeDefined();
@@ -96,6 +100,42 @@ describe('P0 Java Core Roadmap Metadata & Integrity', () => {
     expect(c.fixLab.fixedCode).toContain('ExhaustivePaymentHandler');
     expect(c.design.sampleDesignCode).toContain('OrderState');
     expect(c.explain60s.script).toContain('closed type hierarchy');
+
+    expect(c.staffDefense.questions.length).toBeGreaterThanOrEqual(8);
+    expect(c.interviewDrill.questions.length).toBeGreaterThanOrEqual(4);
+
+    const conceptual = c.assessment.filter((q) => q.type === 'conceptual');
+    const tracing = c.assessment.filter((q) => q.type === 'code-tracing');
+    const debugging = c.assessment.filter((q) => q.type === 'debugging');
+    const design = c.assessment.filter((q) => q.type === 'design');
+
+    expect(conceptual.length).toBeGreaterThanOrEqual(5);
+    expect(tracing.length).toBeGreaterThanOrEqual(2);
+    expect(debugging.length).toBeGreaterThanOrEqual(2);
+    expect(design.length).toBeGreaterThanOrEqual(2);
+    expect(c.assessment.length).toBe(11);
+  });
+
+  it('provides complete Module 1.3 engineering loop content (Pattern Matching & Switch)', () => {
+    const c = MODULE_1_3_CONTENT;
+    expect(c.learn.overview).toContain('Pattern matching in modern Java');
+    expect(c.learn.patternMatchingDistinctions?.typePattern).toContain('binds it to a local pattern variable');
+    expect(c.learn.patternMatchingDistinctions?.recordPattern).toBeDefined();
+    expect(c.learn.patternMatchingDistinctions?.whenGuards).toContain('when');
+    expect(c.learn.patternMatchingDistinctions?.nullHandling).toContain('case null');
+
+    expect(c.buildLab.code).toContain('TransactionEventDispatcher');
+    expect(c.buildLab.code).toContain('case null ->');
+    expect(c.buildLab.code).toContain('Money(var amount, var cur)');
+    expect(c.buildLab.code).toContain('when amount.compareTo');
+
+    expect(c.breakLab.vulnerableCode).toContain('VulnerableDispatcher');
+    expect(c.breakLab.hazard).toContain('dominance');
+
+    expect(c.fixLab.fixedCode).toContain('HardenedPatternDispatcher');
+    expect(c.fixLab.fixedCode).toContain('case null ->');
+    expect(c.design.sampleDesignCode).toContain('WebhookProcessingService');
+    expect(c.explain60s.script).toContain('declarative data transformation');
 
     expect(c.staffDefense.questions.length).toBeGreaterThanOrEqual(8);
     expect(c.interviewDrill.questions.length).toBeGreaterThanOrEqual(4);
@@ -185,10 +225,30 @@ describe('LearningJavaPage.vue (P0 Integration)', () => {
     expect(wrapper.find('[data-testid="stage-break"]').text()).toContain('BrittlePaymentHandler');
   });
 
-  it('shows locked state when trying to access future modules 1.3 to 3.7', async () => {
+  it('switches to Module 1.3 and renders its 11-stage content', async () => {
     const wrapper = mount(LearningJavaPage);
 
-    const lockedTab = wrapper.find('[data-testid="module-tab-1.3"]');
+    const mod13Tab = wrapper.find('[data-testid="module-tab-1.3"]');
+    expect(mod13Tab.exists()).toBe(true);
+    expect(mod13Tab.attributes('disabled')).toBeUndefined();
+    await mod13Tab.trigger('click');
+
+    expect(wrapper.find('[data-testid="module-1-3-content"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Pattern matching in modern Java');
+
+    // Switch to build lab in module 1.3
+    await wrapper.find('[data-testid="stage-tab-build"]').trigger('click');
+    expect(wrapper.find('[data-testid="stage-build"]').text()).toContain('TransactionEventDispatcher');
+
+    // Switch to break lab in module 1.3
+    await wrapper.find('[data-testid="stage-tab-break"]').trigger('click');
+    expect(wrapper.find('[data-testid="stage-break"]').text()).toContain('VulnerableDispatcher');
+  });
+
+  it('shows locked state when trying to access future modules 1.4 to 3.7', async () => {
+    const wrapper = mount(LearningJavaPage);
+
+    const lockedTab = wrapper.find('[data-testid="module-tab-1.4"]');
     expect(lockedTab.attributes('disabled')).toBeDefined();
   });
 });
@@ -232,6 +292,26 @@ describe('JavaFailureLab.vue', () => {
     expect(wrapper.find('[data-testid="lab-console"]').text()).toContain('FraudSuspended');
 
     // Apply exhaustive switch fix -> step 3
+    await wrapper.find('[data-testid="apply-fix-btn"]').trigger('click');
+    expect(wrapper.emitted('completed')).toBeTruthy();
+    expect(wrapper.find('[data-testid="lab-console"]').text()).toContain('FAILURE LAB COMPLETED');
+  });
+
+  it('simulates null payload NPE and pattern dominance trap for module 1.3', async () => {
+    const wrapper = mount(JavaFailureLab, {
+      props: { moduleId: '1.3' },
+    });
+
+    // Initial step 1
+    expect(wrapper.find('[data-testid="trigger-mutation-btn"]').text()).toContain('SIMULATE NULL & DOMINANCE TRAP');
+
+    // Trigger mutation -> step 2
+    await wrapper.find('[data-testid="trigger-mutation-btn"]').trigger('click');
+    expect(wrapper.find('[data-testid="apply-fix-btn"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="lab-console"]').text()).toContain('NullPointerException');
+    expect(wrapper.find('[data-testid="lab-console"]').text()).toContain('dominated');
+
+    // Apply defensive fix -> step 3
     await wrapper.find('[data-testid="apply-fix-btn"]').trigger('click');
     expect(wrapper.emitted('completed')).toBeTruthy();
     expect(wrapper.find('[data-testid="lab-console"]').text()).toContain('FAILURE LAB COMPLETED');

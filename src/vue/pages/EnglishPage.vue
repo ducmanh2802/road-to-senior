@@ -231,16 +231,16 @@ function clearFilters() {
       </div>
 
       <!-- Section Filter Tabs -->
-      <div class="flex flex-wrap gap-1.5 pt-1 border-t border-[#1E293B]/60" role="tablist" aria-label="Section tabs">
+      <div class="flex flex-wrap gap-1.5 pt-1 border-t border-[#1B2433]" role="tablist" aria-label="Section tabs">
         <button
           type="button"
           role="tab"
           :aria-selected="selectedSection === 'ALL'"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono transition-colors"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono transition-colors cursor-pointer"
           :class="[
             selectedSection === 'ALL'
-              ? 'bg-[#38BDF8] text-[#0B0E14] font-bold shadow-sm'
-              : 'bg-[#0B0E14] text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#151B28] border border-[#1E293B]'
+              ? 'bg-[#38BDF8] text-[#0A0E17] font-semibold'
+              : 'bg-[#0A0E17] text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
           ]"
           data-testid="section-tab-ALL"
           @click="selectedSection = 'ALL'"

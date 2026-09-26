@@ -5,7 +5,7 @@
 - Phase M2 — Service Decomposition & Polyglot Persistence: PASS
 - Phase M3 — Microservices Curriculum Enrichment (Audit & Reference Mapping): PASS
 - Phase M4 — Microservices Distributed-System Foundations: PASS
-- Phase M5 — Resilient Inter-Service Communication: PENDING
+- Phase M5 — Spring Cloud, Security, Polyglot Data & Resilience: PASS
 - Phase M6 — Distributed Observability, Monitoring & Auditing: PENDING
 - Phase M7 — Production Kubernetes, Deployment & GitOps: PENDING
 - Phase M8 — Capstone Hardening, Failure Drills & Senior Defense: PENDING

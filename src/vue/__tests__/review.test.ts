@@ -42,7 +42,7 @@ describe('ReviewPage.vue', () => {
     const wrapper = mount(ReviewPage);
     expect(wrapper.text()).toContain('Why does synchronized pin virtual threads?');
     expect(wrapper.text()).toContain('ACTIVE RECALL PROMPT');
-    expect(wrapper.text()).toContain('1 Cards Due Today');
+    expect(wrapper.text()).toContain('1 card due');
   });
 
   it('reveals the model answer and grades via SM-2', async () => {
@@ -90,7 +90,7 @@ describe('ReviewPage.vue', () => {
     await wrapper.find('[data-testid="grade-again"]').trigger('click');
 
     expect(wrapper.find('[data-testid="empty-state"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('Daily Spaced Review Complete!');
+    expect(wrapper.text()).toContain('Review session complete');
 
     // SM-2 AGAIN: reps reset to 0, ease decreases
     const graded = store.reviewCards.find(c => c.id === 'card-1');
@@ -101,7 +101,7 @@ describe('ReviewPage.vue', () => {
     // restart session
     const againBtn = wrapper
       .findAll('button')
-      .filter(b => b.text() === 'Practice Deck Again')[0];
+      .filter(b => b.text() === 'Practice deck again')[0];
     await againBtn.trigger('click');
     expect(wrapper.text()).toContain('Why does synchronized pin virtual threads?');
   });

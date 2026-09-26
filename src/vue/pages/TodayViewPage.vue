@@ -59,6 +59,33 @@ const allCategories: TaskCategory[] = [
 
 const categoryFilter = ref<'ALL' | TaskCategory>('ALL');
 
+/**
+ * Filter model: the status and category rows are single-select navigators, not
+ * an AND-combined query builder. Choosing one clears the other so a learner can
+ * never end up in an empty list that looks like a data bug; "Reset Filter" and
+ * the ALL chips clear both.
+ */
+function setStatusFilter(status: TaskStatusFilter): void {
+  statusFilter.value = status;
+  categoryFilter.value = 'ALL';
+}
+
+function setCategoryFilter(category: 'ALL' | TaskCategory): void {
+  categoryFilter.value = category;
+  statusFilter.value = 'ALL';
+}
+
+function resetFilters(): void {
+  statusFilter.value = 'ALL';
+  categoryFilter.value = 'ALL';
+}
+
+function filterChipClass(isActive: boolean): string {
+  return isActive
+    ? 'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
+    : 'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]';
+}
+
 const filteredTasks = computed<LearningTask[]>(() => {
   let result = store.tasks;
   if (statusFilter.value !== 'ALL') {
@@ -183,48 +210,14 @@ function handleCreateTask(): void {
         :key="status"
         type="button"
         :aria-pressed="statusFilter === status"
-        :class="[
-          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
-          statusFilter === status
-            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
-            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
-        ]"
-        @click="statusFilter = status"
+        :data-testid="`status-filter-${status}`"
+        :class="filterChipClass(statusFilter === status)"
+        @click="setStatusFilter(status)"
       >
         {{ status }}
       </button>
-      </div>
-      <!-- Category filter buttons -->
-      <div class="flex flex-wrap items-center gap-1.5 mt-2" role="group" aria-label="Filter tasks by category">
-        <button
-          v-for="cat in allCategories"
-          :key="cat"
-          type="button"
-          :aria-pressed="categoryFilter === cat"
-          :class="[
-            'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
-            categoryFilter === cat
-              ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
-              : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
-          ]"
-          @click="categoryFilter = cat"
-        >
-          {{ cat }}
-        </button>
-        <button
-          type="button"
-          :aria-pressed="categoryFilter === 'ALL'"
-          :class="[
-            'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
-            categoryFilter === 'ALL'
-              ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
-              : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
-          ]"
-          @click="categoryFilter = 'ALL'"
-        >
-          All
-        </button>
-      </div>
+    </div>
+
     <!-- Category filter buttons -->
     <div class="flex flex-wrap items-center gap-1.5 mt-2" role="group" aria-label="Filter tasks by category">
       <button
@@ -232,26 +225,18 @@ function handleCreateTask(): void {
         :key="cat"
         type="button"
         :aria-pressed="categoryFilter === cat"
-        :class="[
-          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
-          categoryFilter === cat
-            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
-            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
-        ]"
-        @click="categoryFilter = cat"
+        :data-testid="`category-filter-${cat}`"
+        :class="['px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer mt-0', filterChipClass(categoryFilter === cat)]"
+        @click="setCategoryFilter(cat)"
       >
         {{ cat }}
       </button>
       <button
         type="button"
         :aria-pressed="categoryFilter === 'ALL'"
-        :class="[
-          'px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer',
-          categoryFilter === 'ALL'
-            ? 'bg-[#151D2C] text-[#F1F5F9] border border-[#334155] font-semibold'
-            : 'bg-transparent text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#151D2C] border border-[#1B2433]'
-        ]"
-        @click="categoryFilter = 'ALL'"
+        data-testid="category-filter-ALL"
+        :class="['px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer mt-0', filterChipClass(categoryFilter === 'ALL')]"
+        @click="setCategoryFilter('ALL')"
       >
         All
       </button>
@@ -261,9 +246,9 @@ function handleCreateTask(): void {
     <div v-if="filteredTasks.length === 0">
       <EmptyState
         title="No tasks match filter"
-        description="There are no engineering tasks found for this status today. Create a custom task or reset your filter."
+        description="No engineering tasks match the selected status and category. Create a custom task or reset the filters."
         action-label="Reset Filter"
-        @action="statusFilter = 'ALL'"
+        @action="resetFilters"
       />
     </div>
     <div v-else class="space-y-3">

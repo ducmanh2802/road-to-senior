@@ -69,6 +69,8 @@ export interface MsModuleProgressRecord {
   assessmentScore?: number;
   explanationScore?: number;
   defenseScore?: number;
+  /** AI-assisted challenge flows completed for this module (ASK AI → … → DEFEND). */
+  aiChallengesCompleted: string[];
 }
 
 export function createEmptyProgressRecord(moduleId: string, nowIso: string): MsModuleProgressRecord {
@@ -85,7 +87,59 @@ export function createEmptyProgressRecord(moduleId: string, nowIso: string): MsM
     failureLabsPassed: [],
     failureLabAttempts: 0,
     incidentsResolved: [],
+    aiChallengesCompleted: [],
   };
+}
+
+/**
+ * Storage normaliser for MS progress read back from localStorage.
+ *
+ * Learner state is never migrated by destruction: unknown or missing additive
+ * fields are coerced to their declared shape instead of being dropped, and
+ * unknown loop stages are filtered out. Nothing is invented — a missing score
+ * stays missing, so the UI can render "no evidence yet" honestly.
+ */
+export function normalizeMsProgressRecords(
+  raw: unknown
+): Record<string, MsModuleProgressRecord> {
+  if (!raw || typeof raw !== 'object') return {};
+  const source = raw as Record<string, unknown>;
+  const result: Record<string, MsModuleProgressRecord> = {};
+
+  const strings = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  const number = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+  Object.entries(source).forEach(([moduleId, value]) => {
+    if (!value || typeof value !== 'object') return;
+    const record = value as Record<string, unknown>;
+    const stages = strings(record.stages).filter((stage): stage is MsLoopStage =>
+      (MS_LOOP_STAGES as string[]).includes(stage)
+    );
+
+    result[moduleId] = {
+      moduleId,
+      stages,
+      startedAt: typeof record.startedAt === 'string' ? record.startedAt : undefined,
+      updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
+      completedAt: typeof record.completedAt === 'string' ? record.completedAt : undefined,
+      attempts: number(record.attempts) ?? 0,
+      hintsUsed: number(record.hintsUsed) ?? 0,
+      codeLabCompletions: strings(record.codeLabCompletions),
+      benchmarksCompleted: strings(record.benchmarksCompleted),
+      designsCompleted: strings(record.designsCompleted),
+      failureLabsPassed: strings(record.failureLabsPassed),
+      failureLabAttempts: number(record.failureLabAttempts) ?? 0,
+      incidentsResolved: strings(record.incidentsResolved),
+      assessmentScore: number(record.assessmentScore),
+      explanationScore: number(record.explanationScore),
+      defenseScore: number(record.defenseScore),
+      aiChallengesCompleted: strings(record.aiChallengesCompleted),
+    };
+  });
+
+  return result;
 }
 
 /**

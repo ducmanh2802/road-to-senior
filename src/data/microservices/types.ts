@@ -153,6 +153,23 @@ export interface MsFailureLabSpec {
   hypothesisOptions: string[];
   correctHypothesisIndex: number;
   hypothesisRejection: string[];
+  /** INVESTIGATE — steps to gather more data. */
+  investigate: { command: string; output: string; insight: string }[];
+  /** DEBUG — possible root causes. */
+  debugOptions: string[];
+  /** FIX — remediation choice. */
+  correctRootCauseIndex: number;
+  fixOptions: string[];
+  correctFixIndex: number;
+  fixRejection: string[];
+  /** VERIFY — evidence that the fix works. */
+  verify: { command: string; output: string; insight: string }[];
+  /** EXPLAIN — the learner writes it first, then compares. */
+  explainPrompt: string;
+  modelExplanation: string;
+  relatedPatterns: string[];
+  dimension: MsCompetencyDimension;
+}
 export interface MsBenchmarkSpec {
   title: string;
   executionMode: MsExecutionMode;
@@ -322,20 +339,8 @@ export interface MsIncident {
   executionMode: MsExecutionMode;
 }
 
-  /** INVESTIGATE — evidence gathering; each step is diagnostic, not decorative. */
-  investigate: MsInvestigationStep[];
-  /** DEBUG — root-cause identification. */
-  debugOptions: string[];
-  correctRootCauseIndex: number;
-  /** FIX — remediation choice. */
-  fixOptions: string[];
-  correctFixIndex: number;
-  fixRejection: string[];
-  /** VERIFY — evidence that the fix works. */
-  verify: MsInvestigationStep[];
-  /** EXPLAIN — the learner writes it first, then compares. */
-  explainPrompt: string;
-  modelExplanation: string;
-  relatedPatterns: string[];
-  dimension: MsCompetencyDimension;
-}
+
+
+
+
+

@@ -75,12 +75,13 @@ fun onAccountCreated(event: AccountCreatedEvent) { /* TODO: idempotent handling 
           'Consumer lag is visible per partition.',
         ],
         constraints: ['The consumer must not call back into account-service synchronously.'],
-        expected: 'Duplicate replay leaves the notification count unchanged; stopping the consumer shows rising lag that returns to zero.',
-        tests: [
+        expectedBehaviour:
+          'Duplicate replay leaves the notification count unchanged; stopping the consumer shows rising lag that returns to zero.',
+        testCases: [
           ['publish the same event twice', 'one notification and one processed_events row'],
           ['fail the handler for one record', 'record moves to the DLQ and the partition continues'],
         ],
-        hidden: ['Committing the offset before the side effect loses notifications on crash; committing only after a failure loops forever without a DLQ.'],
+        hiddenFailures: ['Committing the offset before the side effect loses notifications on crash; committing only after a failure loops forever without a DLQ.'],
         output: 'Lag metric visible, dedupe proven, DLQ populated, no publish on rollback.',
         hints: ['Write the dedupe row and the side effect in the same local transaction.'],
         explanation: 'The broker guarantees at-least-once; business-level exactly-once is the consumer job via a durable dedupe record.',
@@ -231,17 +232,50 @@ fun onDispatch(command: MailDispatch) { /* TODO: idempotent send with retry */ }
           'Permanent failures appear in mail.dispatch.v1.DLQ with the provider response.',
         ],
         constraints: ['No provider call inside a database transaction.'],
-        expected: 'Provider stub returning 429 then 202 leads to one delivered message; a permanent 400 leads to one DLQ record and continued partition progress.',
-        tests: [
+        expectedBehaviour:
+          'Provider stub returning 429 then 202 leads to one delivered message; a permanent 400 leads to one DLQ record and continued partition progress.',
+        testCases: [
           ['stub returns 429 then 202', 'one delivery, retry observed with delay'],
           ['stub returns 422 permanently', 'one DLQ record, consumer continues'],
         ],
-        hidden: ['Retrying without the idempotency key double-sends when the provider accepted the first request but the response was lost.'],
+        hiddenFailures: ['Retrying without the idempotency key double-sends when the provider accepted the first request but the response was lost.'],
         output: 'Delivery metrics, DLQ populated only for permanent failures, no duplicate sends on replay.',
         hints: ['Store the provider idempotency key derived from the event id, not a random value.'],
         explanation: 'External providers fail in ways you do not control; the only defence is a boundary, a key and bounded retries.',
         extension: 'Add per-provider rate limiting so a throttled quota cannot be exhausted by parallel consumers.',
       },
+    ],
+    debug: [
+      debugEx(
+        'M3.2-D1',
+        'After the mail provider degraded, notification throughput dropped to zero across every partition.',
+        'Consumer lag rises on all partitions at once and no DLQ record appears.',
+        [
+          'consumer threads are blocked inside the synchronous provider HTTP call',
+          'provider p99 latency is 30 s and the client has no timeout',
+          'retries happen inline with no backoff and no circuit breaker',
+          'the DLQ stays empty because the handler never throws',
+        ],
+        'Explain how one slow dependency stopped every partition and where the isolation boundary belongs.',
+        'A blocking, untimed provider call inside the listener consumes the consumer threads; the dependency must be bounded by a timeout, a circuit breaker and bounded asynchronous retries with a DLQ for permanent failures.',
+        ['kafka-consumer-groups.sh --describe --group notification-service', 'grep -i "provider timeout" logs/notification-service.log']
+      ),
+      debugEx(
+        'M3.2-D2',
+        'Some notifications tell the customer the account does not exist, although the signup response was 201.',
+        'Roughly 1 in 200 notifications fails with a 404 lookup after a successful account creation.',
+        [
+          'the event is published inside the account transaction, before commit',
+          'the consumer sometimes reads the account before the transaction commits',
+          'the log ordering shows the publish line before the commit line',
+        ],
+        'Decide whether this is a consumer bug or a producer-side ordering defect, and name the fix.',
+        'This is the dual-write problem: publishing before commit lets consumers observe a state that does not exist yet; the event must be produced only after commit, or through a transactional outbox.',
+        [
+          'grep -nE "publish|commit" logs/account-service.log | head -20',
+          'kafka-console-consumer.sh --topic account.created.v1 --from-beginning --max-messages 5',
+        ]
+      ),
     ],
     failures: [
       {
@@ -370,15 +404,227 @@ fun onProductChanged(event: ProductChanged) { /* TODO: idempotent index upsert *
         lang: 'kotlin',
         requirements: ['Duplicate events produce one document version.', 'Index lag is measurable per product id.', 'A full reindex rebuilds the index from the database.'],
         constraints: ['The indexer must never write to the product database.'],
-        expected: 'Replaying a product event leaves one document; a simulated out-of-order older event is ignored by version comparison.',
-        tests: [['replay the same product event', 'one document, unchanged version'], ['send an older version after a newer one', 'index keeps the newer version']],
-        hidden: ['Indexing without a version lets an out-of-order older event overwrite newer data.'],
+        expectedBehaviour:
+          'Replaying a product event leaves one document; a simulated out-of-order older event is ignored by version comparison.',
+        testCases: [
+          ['replay the same product event', 'one document, unchanged version'],
+          ['send an older version after a newer one', 'index keeps the newer version'],
+        ],
+        hiddenFailures: ['Indexing without a version lets an out-of-order older event overwrite newer data.'],
         output: 'Lag metric per product, idempotent upserts, reindex procedure verified.',
         hints: ['Use the event version as an external version so the index rejects stale writes.'],
         explanation: 'The index is a derived read model: it must be rebuildable and idempotent, never authoritative.',
         extension: 'Add a MongoDB order document read path and confirm the order aggregate is loaded in a single query.',
       },
     ],
-    // MODULES_END
+    debug: [
+      debugEx(
+        'M3.3-D1',
+        'The search index serves a product price that no longer exists in the database.',
+        'The storefront shows a stale price for one SKU for several hours; the database is correct.',
+        [
+          'the indexing consumer committed offsets during a 40-minute outage',
+          'no reindex run exists in the deployment history',
+          'the index document has no external version field',
+          'index lag metric is not exported',
+        ],
+        'Decide how the index drifted from the source of truth and how to restore it without hand-patching documents.',
+        'A derived read model that is not rebuildable cannot be trusted: add an external version, track lag, and restore by snapshot plus replay from a known offset - never by editing documents by hand.',
+        ['GET /product-index/_doc/<sku>', 'SELECT price FROM products WHERE sku = <sku>', 'kafka-consumer-groups.sh --describe --group search-indexer']
+      ),
+      debugEx(
+        'M3.3-D2',
+        'Order documents in MongoDB fail to save once an order crosses 300 line items.',
+        'The write fails with a document size error and the order stays in a pending state.',
+        [
+          'the order document embeds its entire line-item history including every status transition',
+          'line items are appended and never trimmed',
+          'the failure occurs for bulk corporate orders only',
+        ],
+        'Choose the document model change that keeps single-query reads while bounding document growth.',
+        'Embedding is only correct for bounded data: keep the current lines embedded, move unbounded history to a separate collection or event store, and reference it - a document model must have a growth bound.',
+        ['db.orders.stats().avgObjSize', 'db.orders.findOne({ _id: <orderId> })']
+      ),
+    ],
+    failures: [
+      {
+        id: 'M3.3-F1',
+        title: 'Rebuilt index doubles the catalogue',
+        minutes: 60,
+        bug: 'The reindex job upserts documents keyed by a freshly generated UUID instead of the product id, so every rebuild creates a second copy of the catalogue.',
+        reproduce: ['./scripts/reindex-catalogue.sh', 'curl -s localhost:9200/product-index/_count'],
+        observe: [
+          'document count is exactly twice the product row count',
+          'each SKU appears twice with different document ids',
+          'the second copy has the newest data, the first is stale',
+        ],
+        hypotheses: [
+          'Elasticsearch duplicated documents because the index has two shards.',
+          'The reindex job uses a generated id instead of the deterministic product id, so upserts insert instead of overwrite.',
+          'The product service published every event twice during the reindex window.',
+        ],
+        correctHypothesis: 1,
+        hypothesisRejection: [
+          '#1 rejected: shards distribute documents, they never duplicate a document id.',
+          '#3 rejected: the duplicate documents differ only by _id and the count is exactly 2x - a replay would not be that precise.',
+        ],
+        investigate: [
+          ['curl -s "localhost:9200/product-index/_search?q=sku:<sku>&size=2"', 'two hits with the same SKU and different _id values', 'Idempotency requires a deterministic document key derived from the business identifier.'],
+          ['grep -n "UUID" scripts/reindex-catalogue.sh', 'UUID.randomUUID() used as the document id', 'The reindex path is not idempotent while the live indexing path is.'],
+        ],
+        debugOptions: [
+          'The reindex job is not idempotent: key documents by product id and index with external versioning.',
+          'The index mapping must be rebuilt with a stricter schema.',
+        ],
+        correctRootCause: 0,
+        fixOptions: [
+          'Key documents by the product id, set the external version from the aggregate version, rerun the reindex and delete the stale duplicates.',
+          'Delete the index and rely on live events to rebuild it over the next few days.',
+        ],
+        correctFix: 0,
+        fixRejection: [
+          'Deleting the index and waiting for events loses every product whose event has already been consumed; a rebuild must be deterministic and repeatable.',
+        ],
+        verify: [
+          ['curl -s localhost:9200/product-index/_count', 'count equals the product row count', 'The rebuild is now idempotent.'],
+          ['./scripts/reindex-catalogue.sh && curl -s localhost:9200/product-index/_count', 'identical count after a second run', 'A second rebuild changes nothing: the procedure is repeatable.'],
+        ],
+        explainPrompt: 'Explain why a derived read model must be rebuildable, and what made this rebuild unsafe.',
+        modelExplanation:
+          'The index is a projection of the database, so its rebuild must be deterministic and idempotent: keying documents by a random id turned every rebuild into a duplication event, and without an external version there was no way to reject stale writes. A read model is only trustworthy when it can be rebuilt from the source of truth, measured for lag, and repaired by procedure rather than by hand.',
+        patterns: ['Idempotent projection', 'External versioning', 'Rebuildable read model', 'Lag monitoring'],
+        dimension: 'data',
+      },
+      {
+        id: 'M3.3-F2',
+        title: 'Order aggregate hits the 16 MB document ceiling',
+        minutes: 60,
+        bug: 'Every status transition is appended to the order document inside MongoDB, so a long-lived corporate order grows without bound and eventually fails to save.',
+        reproduce: ['./scripts/bulk-order-seed.sh --lines 400 --transitions 1200', 'db.orders.findOne({_id: <orderId>})'],
+        observe: [
+          'the save fails with a document-too-large error',
+          'the order remains PENDING although payment succeeded',
+          'ordinary orders with few transitions are unaffected',
+        ],
+        hypotheses: [
+          'MongoDB cannot store orders larger than 16 MB, so orders must move to PostgreSQL.',
+          'The document embeds unbounded history, so the aggregate outgrew its natural bound instead of the datastore being wrong.',
+          'The payment service wrote a document that exceeded the limit.',
+        ],
+        correctHypothesis: 1,
+        hypothesisRejection: [
+          '#1 rejected: the storage engine is fine for the bounded part of the aggregate; the modelling, not the database, chose unbounded embedding.',
+          '#3 rejected: the failing write is the order status transition, produced by order-service.',
+        ],
+        investigate: [
+          ['db.orders.aggregate([{$project:{size:{$bsonSize:"$$ROOT"}}}]).sort({size:-1}).limit(1)', 'largest document near the 16 MB ceiling', 'The growth is inside the order document, not in a separate collection.'],
+          ['db.order_events.countDocuments({orderId: <orderId>})', 'status history exists in two shapes: embedded and as events', 'The same unbounded data is stored twice.'],
+        ],
+        debugOptions: [
+          'The aggregate embeds unbounded status history; bounded data stays embedded, unbounded history moves to its own collection.',
+          'Add an index on the embedded history array.',
+        ],
+        correctRootCause: 0,
+        fixOptions: [
+          'Keep the current lines embedded, move status history to an order_events collection referenced by orderId, and prove a single-query read of the order plus its current state.',
+          'Compress the history array inside the document.',
+        ],
+        correctFix: 0,
+        fixRejection: [
+          'Compression delays the ceiling instead of removing it, and it makes the document unqueryable.',
+        ],
+        verify: [
+          ['db.orders.findOne({_id: <orderId>})', 'document size is small and stable after 1000 transitions', 'The aggregate now has a growth bound.'],
+          ['./scripts/bulk-order-seed.sh --lines 400 --transitions 5000', 'all transitions succeed', 'Growth is bounded by design, not by luck.'],
+        ],
+        explainPrompt: 'Explain the rule that decides what may be embedded in a document.',
+        modelExplanation:
+          'Embedding is an optimisation for data that is read together and bounded in size: order lines qualify, status history does not. When a document grows with time, the model is wrong regardless of the datastore, because every append moves the aggregate closer to an operational ceiling. The fix is to keep the bounded part embedded and reference the unbounded part, then verify that read patterns and query counts still hold.',
+        patterns: ['Bounded embedding', 'Aggregate growth bound', 'Polyglot persistence trade-offs'],
+        dimension: 'data',
+      },
+    ],
+    defense: [
+      [
+        'Elasticsearch contains a product your PostgreSQL database does not. Which system is wrong, and how do you prove it?',
+        'The database is the source of truth, so the index is wrong by definition - but I would prove it before acting: compare the row and the document for that SKU, read the index lag metric and the consumer offsets, then decide whether the cause is a lost event, an out-of-order write or a failed reindex. Repair is always rebuild-from-source, never hand-editing the document, and the follow-up is a lag alert plus an external version so stale writes cannot win.',
+        'data',
+        ['Names the source of truth and why.', 'Describes the concrete comparison performed.', 'States the repair path without hand-patching.', 'Names prevention: version plus lag alert.'],
+      ],
+      [
+        'Why does this capstone use three datastores instead of one PostgreSQL instance?',
+        'Each store exists for an access pattern the others serve badly: PostgreSQL for transactional invariants, MongoDB for a document-shaped order aggregate read in one query, Elasticsearch for text search and facets. The cost is real - duplicated data, eventual consistency windows, more operational surface and cross-store debugging - so every store must have a documented rebuild path and a named owner. If I cannot state which invariant a store protects, it does not belong in the architecture.',
+        'architecture',
+        ['Justifies each store by access pattern, not fashion.', 'Acknowledges the operational cost explicitly.', 'Requires a rebuild path per store.', 'States the removal criterion.'],
+      ],
+      [
+        'Your search index lag is 40 seconds during peak. Is that acceptable?',
+        'It depends on the product promise, not on the number: if the catalogue UI labels results as recently updated and the business tolerates a short window, 40 s is acceptable with an alert threshold above it. What is not acceptable is an unmeasured window, a lag metric nobody pages on, or a read path that silently mixes stale and fresh data. I would set a budget, alert on the burn rate, and expose lag next to the index so incidents classify themselves.',
+        'communication',
+        ['Reframes the number as a product budget.', 'Rejects unmeasured lag.', 'Names the alerting approach.', 'Ties the decision to business tolerance.'],
+      ],
+    ],
+    english: [
+      [
+        ['eventual consistency', 'The state converges after a bounded window instead of instantly.', 'Search results are eventually consistent; the index trails the database by the propagation window.'],
+        ['derived read model', 'A query-optimised projection rebuilt from the source of truth.', 'The search index is a derived read model, so it must be rebuildable at any time.'],
+        ['index lag', 'The delay between a source write and its visibility in the index.', 'We alert when index lag exceeds thirty seconds for five minutes.'],
+        ['reindex', 'A full rebuild of a projection from the authoritative store.', 'Every mapping change ships with a reindex procedure and a dry run.'],
+      ],
+      [
+        'The database is the source of truth; the index is a projection with a measured lag.',
+        'We rebuild rather than patch: a projection that cannot be rebuilt cannot be trusted.',
+        'Our read model is eventually consistent within a window we alert on.',
+      ],
+      'Polyglot persistence means each store owns one access pattern: PostgreSQL protects transactional invariants, MongoDB serves the order aggregate in one read, and Elasticsearch answers text and facet queries. Because the index is a projection, it can lag the database, so we measure lag, version every write to ignore stale events, and keep a reindex procedure that restores the index from the source of truth without touching documents by hand.',
+      [
+        ['Customer reports a stale price', 'The catalogue still shows the pre-update price while the database shows the new one. We are serving from a projection that is behind; we are checking index lag and the consumer offset before we change anything.'],
+        ['Search results drop after a deploy', 'The index rebuild consumed a partial mapping; we paused indexing, rebuilt from the database into a fresh index, verified the document count, and then switched the alias.'],
+      ],
+      [
+        'This projection is keyed by a generated id, so the rebuild is not idempotent — it must key on the aggregate id.',
+        'The external version is missing here, so an out-of-order event can overwrite newer data.',
+        'Store this unbounded history outside the document: it has no growth bound.',
+      ],
+      [
+        'Which store owns this invariant, and what happens to the projection when it is lost?',
+        'If the index is down, the write path must still commit; only the read model degrades.',
+        'Let us agree on an acceptable lag budget before we optimise anything.',
+      ],
+      [
+        'Why is a search index not a system of record?',
+        'How do you rebuild a projection without downtime?',
+        'What lag would you publish as an SLO, and to whom?',
+      ],
+      'The search index is a derived read model, not a system of record. PostgreSQL owns the product data; MongoDB serves the order aggregate as one document with a bounded size; Elasticsearch answers text and facet queries but can lag. Because it is a projection, we version every write so stale events lose, we measure lag and alert on it, and we keep a deterministic reindex procedure so the index can always be rebuilt from the source of truth.',
+    ],
+    ai: [
+      'Ask an AI to design the projection strategy for a catalogue that must support text search, facets and price sorting without duplicating the database.',
+      'The AI recommends making Elasticsearch the source of truth for catalogue data, deleting the reindex script because it caused the duplicate-document incident, and letting live events slowly correct the index.',
+      [
+        'Inverting the system of record removes the transactional guarantees the checkout path depends on.',
+        'Deleting the reindex path makes the projection unrecoverable after a mapping change or an outage.',
+        'Deferring correctness to slow event replay leaves the index wrong for an unbounded time.',
+        'No mention of external versioning, so out-of-order events can overwrite newer data.',
+      ],
+      [
+        'Ask the AI which system commits the sale, and name the invariant each store protects.',
+        'Ask what happens when the index mapping changes with no reindex path available.',
+        'Ask for the maximum staleness the storefront can tolerate and the metric that proves it.',
+      ],
+      'The AI inverted the system of record and removed the only repair path. Correct outcome: PostgreSQL remains authoritative, the index is a versioned projection with measured lag, and a deterministic reindex procedure is a first-class operational asset rather than a liability to delete.',
+    ],
+    quiz: [
+      ['conceptual', 'What makes a search index safe to treat as a read model?', ['It is stored on SSD', 'It can be rebuilt deterministically from the source of truth', 'It has more shards than the database', 'It is written synchronously'], 1, 'Trust comes from rebuildability and measured lag, not from hardware.'],
+      ['scenario', 'A product edit is invisible in search for two minutes. What must exist before you call this a defect?', ['A documented lag budget and an alert threshold', 'A second Elasticsearch cluster', 'A synchronous write path from the API', 'A nightly full reindex only'], 0, 'Without a stated budget a lag number is neither good nor bad.'],
+      ['debugging', 'Document count is exactly double the product count after a reindex. First check?', ['The number of shards', 'The document _id derivation in the reindex job', 'The Elasticsearch heap size', 'The Kafka retention setting'], 1, 'A precise 2x count points at non-deterministic document keys, not at the search engine.'],
+      ['design', 'An order aggregate keeps hitting the 16 MB document ceiling. Which change is correct?', ['Move orders to another database', 'Compress the embedded history', 'Keep bounded data embedded and reference unbounded history', 'Raise the document limit'], 2, 'Embedding requires a growth bound; the model, not the datastore, must change.'],
+      ['code-tracing', 'Why does an external version prevent an out-of-order event from overwriting newer data?', ['It reorders the Kafka log', 'It rejects a write whose version is older than the stored one', 'It locks the index', 'It rewrites the event payload'], 1, 'Version comparison turns redelivery and reordering into a no-op.'],
+      ['scenario', 'The index is corrupted at 02:00 and search is part of the checkout journey. What is the first action?', ['Hand-edit the affected documents', 'Switch or degrade the read path, then rebuild from the source of truth', 'Delete the index and wait for events', 'Restore a database backup'], 1, 'Protect the customer journey first; repair the projection by procedure second.'],
+      ['conceptual', 'When is MongoDB the wrong choice for an aggregate?', ['When the aggregate is read in one query', 'When part of the aggregate grows without a bound', 'When the document is under 1 MB', 'When the team knows SQL better'], 1, 'Document stores reward bounded, read-together data.'],
+      ['design', 'What must ship with every change to a projection mapping?', ['A reindex procedure with a dry run', 'A bigger Elasticsearch node', 'A read-only alias only', 'A second Kafka cluster'], 0, 'A mapping change without a rebuild path is an unplanned outage.'],
+      ['debugging', 'Index lag is flat but one SKU is permanently stale. Which hypothesis fits best?', ['Global indexing is slow', 'One event was lost, or an out-of-order write won', 'The index is out of disk space', 'Kafka retention expired'], 1, 'Uniform lag rules out throughput; a single stale key points at a lost or superseded write.'],
+      ['scenario', 'A stakeholder asks why search shows yesterday’s price at 09:00. Best answer?', ['The database is wrong', 'Search is a projection with a measured lag; here is the current lag and alert state', 'We will disable search', 'It is a caching problem'], 1, 'Name the model, show the metric, then commit to a fix if a budget was breached.'],
+    ],
   }),
 ];

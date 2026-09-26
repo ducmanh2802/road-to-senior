@@ -57,7 +57,7 @@
       <div class="p-5 sm:p-6 space-y-5">
         <div>
           <div class="text-[11px] font-mono text-[#64748B] uppercase tracking-wider mb-1.5">
-            Prompt
+            ACTIVE RECALL PROMPT
           </div>
           <h2 class="text-lg sm:text-xl font-bold text-[#F1F5F9] leading-snug">
             {{ currentCard.question }}
@@ -84,7 +84,9 @@
         </Button>
 
         <div v-else class="space-y-5 pt-4 border-t border-[#1B2433]">
-  <div class="text-sm font-medium text-[#F1F5F9] text-center mb-2">ACTIVE RECALL PROMPT</div>
+          <div class="text-sm font-medium text-[#F1F5F9] text-center mb-2">
+            IDEAL SENIOR ARCHITECTURAL ANSWER
+          </div>
           <div class="space-y-2">
             <div class="flex items-center gap-2 text-[11px] font-mono text-[#22C55E] uppercase tracking-wider">
               <CheckCircle2 class="w-3.5 h-3.5" aria-hidden="true" />

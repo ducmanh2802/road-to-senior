@@ -1,20 +1,17 @@
 # ACTIVE TASK ON PROGRESS
 
-CURRENT TASK: Module 1.3 — Pattern Matching & Switch
-STATUS: COMPLETED
+CURRENT TASK: Phase M4 — Microservices Distributed-System Foundations
+STATUS: COMPLETED (PASS)
 IMPLEMENTED:
-  - Module 1.3 content with complete 11-stage Engineering Loop (Learn, Build, Break, Observe, Debug, Fix, Benchmark, Design, Explain, Defend, Assess).
-  - Modern Java 21+ pattern matching for switch, record deconstruction, guarded when clauses, dominance ordering, and explicit null handling.
-  - Interactive failure lab in `JavaFailureLab.vue` for Module 1.3 simulating pattern dominance compile failure and null selector NPE trap.
-  - Hardened domain event dispatcher, webhook CQRS design challenge, 60s explanation drill, staff defense questions, and 11-question deterministic assessment.
-  - Comprehensive unit test suite covering Module 1.3 metadata, loop content, UI navigation, and failure lab.
+  - Canonical type models updated in `src/data/microservices/types.ts` (complete `MsFailureLabSpec` fields, zero loose types).
+  - Microservices Phase M4 definitions in `src/data/microservices/phaseM4.ts` with modules, lab specs, failure scenarios, and architectural defense.
+  - Microservices engine normalisation updated in `src/engines/microservices.ts` (`normalizeMsProgressRecords`).
+  - Strict type checking (`tsc --noEmit`) passes with 0 errors.
 TESTS:
-  - 17 test suites, 164 unit tests passing (100% PASS).
+  - 17 test suites, 165 unit tests passing (100% PASS).
 QUALITY GATES:
   - TypeScript (tsc): PASS
-  - Vue SFC (vue-tsc): PASS
-  - ESLint: PASS (0 errors)
-  - Production Build: PASS
-COMMIT: PENDING (staging now)
-NEXT TASK: Module 1.4 — String Templates, Text Blocks & Modern I/O
+  - Vitest Unit Tests: PASS (165/165)
+COMMIT: Staged for Phase M4 atomic commit
+NEXT TASK: Phase M5 (awaiting user trigger)
 BLOCKERS: NONE

@@ -91,3 +91,5 @@ Active work: none
 1. Read .ai/phases/phase-005.md + .ai/skills/frontend-vue.md
 2. Select next vertical slice per ROADMAP.md
 3. Execute Phase 006 following the proven migration pattern → commit → STOP
+- Phase M3 — Microservices Curriculum Enrichment: PASS (audit & mapping completed)
+- Phase M4 — Microservices Distributed-System Foundations: PASS (implementation & validation completed)

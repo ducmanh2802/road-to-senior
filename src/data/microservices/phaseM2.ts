@@ -69,9 +69,12 @@ export const MS_M2_MODULES = [
         lang: 'kotlin',
         requirements: ['Missing DB_URL fails startup naming the variable.', 'Readiness is DOWN while the database is unreachable.', 'Every log line carries service, traceId and requestId.'],
         constraints: ['No secrets in any committed file.'],
-        expected: 'Healthy stack; broken DB_URL fails fast; killing Postgres flips readiness DOWN then UP.',
-        tests: [['start with valid env', 'readiness UP and migration applied'], ['start without DB_URL', 'non-zero exit naming DB_URL']],
-        hidden: ['Readiness answers UP while the datasource is lazily initialised and never touched.'],
+        expectedBehaviour: 'Healthy stack; broken DB_URL fails fast; killing Postgres flips readiness DOWN then UP.',
+        testCases: [
+          ['start with valid env', 'readiness UP and migration applied'],
+          ['start without DB_URL', 'non-zero exit naming DB_URL']
+        ],
+        hiddenFailures: ['Readiness answers UP while the datasource is lazily initialised and never touched.'],
         output: 'Template runs, readiness reflects the database, logs are JSON.',
         hints: ['Register your own health indicator per dependency instead of trusting the default.'],
         explanation: 'The template is the contract with operations: predictable startup, honest readiness, machine-readable logs.',
@@ -89,9 +92,12 @@ export const MS_M2_MODULES = [
         lang: 'kotlin',
         requirements: ['Breaking changes fail the build.', 'Additive changes pass and update the baseline deliberately.'],
         constraints: ['The baseline changes only through an explicit commit.'],
-        expected: 'Field removal fails CI naming the field; optional field addition passes.',
-        tests: [['remove a required response field', 'build fails naming the field'], ['add an optional field', 'build passes']],
-        hidden: ['Comparing only paths and ignoring schemas lets field removals through.'],
+        expectedBehaviour: 'Field removal fails CI naming the field; optional field addition passes.',
+        testCases: [
+          ['remove a required response field', 'build fails naming the field'],
+          ['add an optional field', 'build passes'],
+        ],
+        hiddenFailures: ['Comparing only paths and ignoring schemas lets field removals through.'],
         output: 'CI fails on an incompatible change, passes on an additive one.',
         hints: ['Diff request and response schemas, not only path presence.'],
         explanation: 'Contracts are enforced by the pipeline; documents are not contracts.',
@@ -244,17 +250,46 @@ export const MS_M2_MODULES = [
           'Audit fields are set in one place.',
         ],
         constraints: ['No pessimistic lock held across the HTTP request.'],
-        expected: 'Two concurrent PUTs: one 200 and one 409; replay of the winner returns the stored 200 body.',
-        tests: [
+        expectedBehaviour:
+          'Two concurrent PUTs: one 200 and one 409; replay of the winner returns the stored 200 body.',
+        testCases: [
           ['two interleaved PUTs on one account', 'one commit succeeds, the other rejects with 409'],
           ['same Idempotency-Key twice', 'identical response body, single account row'],
         ],
-        hidden: ['Retrying only the UPDATE inside the same transaction succeeds against a stale entity and still loses concurrency safety.'],
+        hiddenFailures: ['Retrying only the UPDATE inside the same transaction succeeds against a stale entity and still loses concurrency safety.'],
         output: 'Concurrency test shows exactly one winner; idempotency replay returns the first response.',
         hints: ['Reload the aggregate inside the retry attempt, do not reuse the stale entity.'],
         explanation: 'Concurrency safety is a data-integrity feature: the database must be able to reject a stale write, and the client must be told why.',
         extension: 'Add jittered exponential backoff for retries and prove that a retry storm does not increase row conflicts.',
       },
+    ],
+    debug: [
+      debugEx(
+        'M2.2-D1',
+        'Two concurrent account updates both returned HTTP 200 but the stored balance is the second writer’s value only.',
+        'The balance change of the first request is silently gone; no error was returned to either client.',
+        [
+          'both responses contain 200 with different bodies',
+          'the accounts table has no @Version column in the migration',
+          'audit_log shows two updates for the same account id within 40 ms',
+        ],
+        'Decide which mechanism allowed a silent lost update and where it must live.',
+        'Without an optimistic-locking column the last commit wins: the version must live in the database row and the API must translate the conflict into 409, never into a silent overwrite.',
+        ['\\d accounts (check for the version column)', 'SELECT id, version, updated_at FROM accounts WHERE id = <id>']
+      ),
+      debugEx(
+        'M2.2-D2',
+        'A client retry during a network timeout created two accounts with the same email address.',
+        'One logical signup produced two account rows and two confirmation emails.',
+        [
+          'two rows share the same email but different ids',
+          'the request log shows the same Idempotency-Key on both attempts',
+          'the idempotency record was inserted after the account transaction committed',
+        ],
+        'Explain why a recorded idempotency key did not prevent the duplicate and fix the ordering.',
+        'Idempotency only works when the key row and the business effect commit in one transaction with a unique constraint on the key: writing it afterwards reopens the duplicate window.',
+        ['SELECT key, response_body, created_at FROM idempotency_keys WHERE key = <uuid>', 'SELECT id, email, created_at FROM accounts WHERE email = <email>']
+      ),
     ],
     failures: [
       {
@@ -388,17 +423,53 @@ fun list(@RequestParam category: String, @RequestParam(required = false) cursor:
           'A renamed field is added additively while the old field remains.',
         ],
         constraints: ['No breaking change to the existing /api/v1 response within this release.'],
-        expected: 'EXPLAIN shows Index Scan instead of Seq Scan plus Sort; replaying the cursor returns the next page deterministically.',
-        tests: [
+        expectedBehaviour:
+          'EXPLAIN shows Index Scan instead of Seq Scan plus Sort; replaying the cursor returns the next page deterministically.',
+        testCases: [
           ['list with 50k rows, category filter, price sort', 'Index Scan, no Sort node, stable p95'],
           ['insert a product between two page reads', 'no duplicated or skipped rows with keyset paging'],
         ],
-        hidden: ['Offset-based paging returns duplicates when rows are inserted between page requests.'],
+        hiddenFailures: ['Offset-based paging returns duplicates when rows are inserted between page requests.'],
         output: 'EXPLAIN plan before/after, stable pagination test, additive DTO change with both fields present.',
         hints: ['Read the EXPLAIN plan first and only then add an index - plans tell you which column order matters.'],
         explanation: 'Query performance is decided by the access path the planner chooses, and contract safety is decided by what you are allowed to change.',
         extension: 'Add price-history events to feed Elasticsearch in M3 and publish the change event after commit.',
       },
+    ],
+    debug: [
+      debugEx(
+        'M2.3-D1',
+        'The catalogue list endpoint p95 doubled after a release added a status filter to the product query.',
+        'Latency grows with table size even though the query returns only 20 rows.',
+        [
+          'EXPLAIN shows Seq Scan on products followed by a Sort node',
+          'the new WHERE clause filters on status',
+          'the existing index covers (category_id) only',
+          'the endpoint still uses deep OFFSET pagination',
+        ],
+        'Identify the access-path change that caused the regression and the index that removes it.',
+        'A filter without a matching index forces a sequential scan; the index must cover filter plus sort order, and OFFSET must be replaced by keyset pagination for deep pages.',
+        [
+          'EXPLAIN ANALYZE SELECT ... FROM products WHERE category_id = ? AND status = ? ORDER BY price LIMIT 20',
+          "SELECT indexdef FROM pg_indexes WHERE tablename = 'products'",
+        ]
+      ),
+      debugEx(
+        'M2.3-D2',
+        'Support cannot join a customer complaint to the request that failed: one hop logs a different correlation id.',
+        'The correlation id changes between the gateway log, the product-service log and the error response.',
+        [
+          'the gateway generates a new id instead of honouring the inbound header',
+          'no component writes the id into MDC',
+          'the error contract body has no correlationId field',
+        ],
+        'Trace the correlation id through the hops and decide where it must be created, propagated and exposed.',
+        'One id is created at the edge, propagated through every hop via header and MDC, echoed in every response and logged: correlation is a contract, not a logging convenience.',
+        [
+          "curl -i -H 'X-Correlation-Id: <uuid>' .../api/v1/products?category=books",
+          'grep <uuid> logs/product-service.log',
+        ]
+      ),
     ],
     failures: [
       {

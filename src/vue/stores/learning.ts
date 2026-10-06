@@ -29,6 +29,7 @@ import {
 } from '../../data/seedData';
 import { calculateCompetencies, findWeakestDimension } from '../../engines/competency';
 import { ALL_MS_MODULES, ALL_MS_INCIDENTS } from '../../data/microservices';
+import { MS_M7_INCIDENTS } from '../../data/microservices/phaseM7';
 import type { MsLoopStage } from '../../data/microservices/types';
 import {
   createEmptyProgressRecord,
@@ -61,6 +62,16 @@ export interface NextActionInfo {
   actionLabel: string;
 }
 
+export interface M7IncidentInvestigationRecord {
+  status: 'TRIAGING' | 'HYPOTHESIS_SUBMITTED' | 'ROOT_CAUSE_IDENTIFIED' | 'FIX_APPLIED' | 'VERIFIED' | 'RESOLVED';
+  hypothesisIndex: number | null;
+  rootCauseIndex: number | null;
+  fixApplied: boolean;
+  verified: boolean;
+  postmortemSignedOff: boolean;
+  defenseAnswers: string[];
+}
+
 export const useLearningStore = defineStore('learning', () => {
 const completedAiTopicIds = ref<string[]>([]);
 const completedEnglishItemIds = ref<string[]>([]);
@@ -70,6 +81,8 @@ const javaModuleStageProgress = ref<Record<string, string[]>>({});
 const javaModuleAssessmentScores = ref<Record<string, number>>({});
 const msProgress = ref<Record<string, MsModuleProgressRecord>>({});
 const judgmentRecords = ref<Record<string, JudgmentAttemptRecord>>({});
+const completedM7ModuleIds = ref<string[]>([]);
+const m7IncidentStates = ref<Record<string, M7IncidentInvestigationRecord>>({});
   const currentDay = ref<number>(37);
   const streak = ref<number>(14);
   const studyTimeMinutes = ref<number>(142);
@@ -111,6 +124,8 @@ const judgmentRecords = ref<Record<string, JudgmentAttemptRecord>>({});
         javaModuleAssessmentScores: javaModuleAssessmentScores.value,
         msProgress: msProgress.value,
         judgmentRecords: judgmentRecords.value,
+        completedM7ModuleIds: completedM7ModuleIds.value,
+        m7IncidentStates: m7IncidentStates.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -137,6 +152,8 @@ const judgmentRecords = ref<Record<string, JudgmentAttemptRecord>>({});
     javaModuleAssessmentScores.value = {};
     msProgress.value = {};
     judgmentRecords.value = {};
+    completedM7ModuleIds.value = [];
+    m7IncidentStates.value = {};
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
@@ -203,6 +220,10 @@ const judgmentRecords = ref<Record<string, JudgmentAttemptRecord>>({});
         javaModuleAssessmentScores.value = scoreRecord(parsed.javaModuleAssessmentScores);
         msProgress.value = normalizeMsProgressRecords(parsed.msProgress);
         judgmentRecords.value = normalizeJudgmentRecords(parsed.judgmentRecords);
+        completedM7ModuleIds.value = stringArray(parsed.completedM7ModuleIds);
+        if (parsed.m7IncidentStates && typeof parsed.m7IncidentStates === 'object') {
+          m7IncidentStates.value = parsed.m7IncidentStates;
+        }
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -834,6 +855,110 @@ const msModules = ALL_MS_MODULES;
     return false;
   }
 
+  function isM7ModuleCompleted(id: string): boolean {
+    return completedM7ModuleIds.value.includes(id);
+  }
+
+  function toggleM7ModuleCompletion(id: string): void {
+    if (completedM7ModuleIds.value.includes(id)) {
+      completedM7ModuleIds.value = completedM7ModuleIds.value.filter((m) => m !== id);
+    } else {
+      completedM7ModuleIds.value = [...completedM7ModuleIds.value, id];
+    }
+    saveToStorage();
+  }
+
+  function getM7IncidentInvestigationState(id: string): M7IncidentInvestigationRecord {
+    if (!m7IncidentStates.value[id]) {
+      m7IncidentStates.value[id] = {
+        status: 'TRIAGING',
+        hypothesisIndex: null,
+        rootCauseIndex: null,
+        fixApplied: false,
+        verified: false,
+        postmortemSignedOff: false,
+        defenseAnswers: [],
+      };
+    }
+    return m7IncidentStates.value[id];
+  }
+
+  function submitM7IncidentHypothesis(id: string, hypothesisIdx: number): { success: boolean; feedback: string } {
+    const state = getM7IncidentInvestigationState(id);
+    const incident = MS_M7_INCIDENTS.find((i) => i.id === id);
+    state.hypothesisIndex = hypothesisIdx;
+    if (incident && hypothesisIdx === incident.correctHypothesisIndex) {
+      state.status = 'HYPOTHESIS_SUBMITTED';
+      saveToStorage();
+      return { success: true, feedback: 'Hypothesis validated by preliminary telemetry logs.' };
+    }
+    saveToStorage();
+    return { success: false, feedback: 'Telemetry metrics contradict this hypothesis. Re-examine logs and alerts.' };
+  }
+
+  function submitM7IncidentRootCause(id: string, rootCauseIdx: number): { success: boolean; feedback: string } {
+    const state = getM7IncidentInvestigationState(id);
+    const incident = MS_M7_INCIDENTS.find((i) => i.id === id);
+    state.rootCauseIndex = rootCauseIdx;
+    if (incident && rootCauseIdx === incident.correctRootCauseIndex) {
+      state.status = 'ROOT_CAUSE_IDENTIFIED';
+      saveToStorage();
+      return { success: true, feedback: 'Root cause confirmed. Proceed with architectural hotfix application.' };
+    }
+    saveToStorage();
+    return { success: false, feedback: 'Technical root cause incorrect. Check component diagnostics.' };
+  }
+
+  function applyM7IncidentFix(id: string): void {
+    const state = getM7IncidentInvestigationState(id);
+    state.fixApplied = true;
+    state.status = 'FIX_APPLIED';
+    saveToStorage();
+  }
+
+  function verifyM7IncidentFix(id: string): void {
+    const state = getM7IncidentInvestigationState(id);
+    state.verified = true;
+    state.status = 'VERIFIED';
+    saveToStorage();
+  }
+
+  function submitM7IncidentDefenseAnswer(id: string, index: number, answer: string): void {
+    const state = getM7IncidentInvestigationState(id);
+    state.defenseAnswers[index] = answer;
+    saveToStorage();
+  }
+
+  function signOffM7IncidentPostmortem(id: string): void {
+    const state = getM7IncidentInvestigationState(id);
+    state.postmortemSignedOff = true;
+    state.status = 'RESOLVED';
+    saveToStorage();
+  }
+
+  function resetM7IncidentState(id: string): void {
+    m7IncidentStates.value[id] = {
+      status: 'TRIAGING',
+      hypothesisIndex: null,
+      rootCauseIndex: null,
+      fixApplied: false,
+      verified: false,
+      postmortemSignedOff: false,
+      defenseAnswers: [],
+    };
+    saveToStorage();
+  }
+
+  const resolvedM7IncidentCount = computed(() => {
+    return Object.values(m7IncidentStates.value).filter((s) => s.status === 'RESOLVED').length;
+  });
+
+  const m7ProgressPercent = computed(() => {
+    const totalItems = 8 + 6;
+    const completedItems = completedM7ModuleIds.value.length + resolvedM7IncidentCount.value;
+    return Math.min(100, Math.round((completedItems / totalItems) * 100));
+  });
+
   return {
     currentDay,
     completedAiTopicIds,
@@ -916,5 +1041,19 @@ const msModules = ALL_MS_MODULES;
     judgmentRemediation,
     submitJudgment,
     certification,
+    completedM7ModuleIds,
+    m7IncidentStates,
+    isM7ModuleCompleted,
+    toggleM7ModuleCompletion,
+    getM7IncidentInvestigationState,
+    submitM7IncidentHypothesis,
+    submitM7IncidentRootCause,
+    applyM7IncidentFix,
+    verifyM7IncidentFix,
+    submitM7IncidentDefenseAnswer,
+    signOffM7IncidentPostmortem,
+    resetM7IncidentState,
+    resolvedM7IncidentCount,
+    m7ProgressPercent,
   };
 });

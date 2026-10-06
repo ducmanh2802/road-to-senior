@@ -1207,7 +1207,7 @@ const executionNote = (mode: MsExecutionMode) => MS_EXECUTION_NOTES[mode];
                   </details>
                   <div class="space-y-0.5">
                     <div class="text-[10px] font-mono font-bold text-[#F59E0B] uppercase">Defense questions</div>
-                    <p v-for="q in activeIncident.defenseQuestions" :key="q" class="text-[11px] text-[#CBD5E1]">• {{ q }}</p>
+                    <p v-for="(q, idx) in activeIncident.defenseQuestions" :key="idx" class="text-[11px] text-[#CBD5E1]">• {{ typeof q === 'string' ? q : q.question }}</p>
                   </div>
                   <Button variant="secondary" size="sm" data-testid="ms-triage-finish" @click="closeTriage">
                     Close postmortem

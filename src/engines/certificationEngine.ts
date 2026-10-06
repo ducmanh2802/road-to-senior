@@ -200,7 +200,9 @@ export function computeCertificationDimensions(input: CertificationInput): Dimen
   }).length;
 
   // --- architecture: architecture challenges + explanation self-score ---
-  const explanationModules = modules.filter((module) => module.english.sixtySecondExplanation.length > 0);
+  const explanationModules = modules.filter(
+    (module) => Boolean(module.english?.sixtySecondExplanation && module.english.sixtySecondExplanation.length > 0)
+  );
   const explanationRecorded = explanationModules.filter((module) => {
     const score = input.msProgress[module.id]?.explanationScore;
     return typeof score === 'number' && score >= CERTIFICATION_DIMENSION_THRESHOLD;

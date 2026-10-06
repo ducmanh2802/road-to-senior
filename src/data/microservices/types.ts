@@ -52,6 +52,7 @@ export type MsCompetencyDimension =
   | 'debugging'
   | 'communication'
   | 'system-design'
+  | 'security'
   | 'production-engineering';
 
 export interface MsPhaseMeta {
@@ -243,7 +244,8 @@ export type MsAssessmentQuestionType =
   | 'scenario'
   | 'code-tracing'
   | 'debugging'
-  | 'design';
+  | 'design'
+  | 'performance';
 
 export interface MsAssessmentQuestion {
   id: string;

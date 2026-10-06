@@ -22,6 +22,8 @@ import {
   AlertOctagon,
   Repeat,
   BarChart3,
+  Scale,
+  ShieldCheck,
   Settings as SettingsIcon,
   type LucideProps,
 } from 'lucide-vue-next';
@@ -61,6 +63,12 @@ export const navSections: NavSection[] = [
     ],
   },
   {
+    title: 'ENGINEERING',
+    items: [
+      { label: 'Judgment Lab', to: '/engineering/judgment', icon: Scale },
+    ],
+  },
+  {
     title: 'BUILD',
     items: [
       { label: 'Build Labs', to: '/build', icon: Hammer },
@@ -81,7 +89,13 @@ export const navSections: NavSection[] = [
     items: [
       { label: 'AWS', to: '/certifications', icon: CloudCog },
       { label: 'AIF-C01', to: '/certifications/aws/aif-c01', icon: Award, child: true },
- { label: 'Future Certifications', to: '/certifications', icon: Brush, child: true },
+      {
+        label: 'Senior Engineering',
+        to: '/certifications/senior-engineering',
+        icon: ShieldCheck,
+        child: true,
+      },
+  { label: 'Future Certifications', to: '/certifications', icon: Brush, child: true },
     ],
   },
   {

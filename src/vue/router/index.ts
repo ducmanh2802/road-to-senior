@@ -55,7 +55,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/learning/microservices',
     name: 'learning-microservices',
-    component: PagePlaceholder,
+    component: () => import('../pages/MicroservicesPage.vue'),
     meta: { section: 'LEARNING', title: 'Microservices' },
   },
   {
@@ -81,6 +81,12 @@ export const routes: RouteRecordRaw[] = [
     name: 'learning-system-design',
     component: PagePlaceholder,
     meta: { section: 'LEARNING', title: 'System Design' },
+  },
+  {
+    path: '/engineering/judgment',
+    name: 'engineering-judgment',
+    component: () => import('../pages/EngineeringJudgmentPage.vue'),
+    meta: { section: 'ENGINEERING', title: 'Engineering Judgment' },
   },
   {
     path: '/build',
@@ -123,6 +129,12 @@ export const routes: RouteRecordRaw[] = [
     name: 'certifications',
     component: PagePlaceholder,
     meta: { section: 'CERTIFICATIONS', title: 'Certifications' },
+  },
+  {
+    path: '/certifications/senior-engineering',
+    name: 'certifications-senior-engineering',
+    component: () => import('../pages/CertificationPage.vue'),
+    meta: { section: 'CERTIFICATIONS', title: 'Senior Engineering Certification' },
   },
   {
     path: '/certifications/aws/aif-c01',

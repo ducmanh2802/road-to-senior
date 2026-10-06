@@ -28,6 +28,28 @@ import {
   INITIAL_INTERVIEW_QUESTIONS,
 } from '../../data/seedData';
 import { calculateCompetencies, findWeakestDimension } from '../../engines/competency';
+import { ALL_MS_MODULES, ALL_MS_INCIDENTS } from '../../data/microservices';
+import type { MsLoopStage } from '../../data/microservices/types';
+import {
+  createEmptyProgressRecord,
+  computeTrackProgress,
+  calculateMsCompetencies,
+  isModuleComplete,
+  normalizeMsProgressRecords,
+  type MsModuleProgressRecord,
+} from '../../engines/microservices';
+import { JUDGMENT_SCENARIOS } from '../../data/judgmentScenarios';
+import {
+  computeJudgmentTrackProgress,
+  evaluateJudgment,
+  normalizeJudgmentRecords,
+  selectJudgmentRemediation,
+  type DecisionSubmission,
+  type JudgmentAttemptRecord,
+  type JudgmentEvaluation,
+  type JudgmentScenario,
+} from '../../engines/judgmentEngine';
+import { evaluateCertification, type CertificationVerdict } from '../../engines/certificationEngine';
 
 export const STORAGE_KEY = 'SENIOR_JAVA_180_STATE_V1';
 
@@ -46,6 +68,8 @@ const completedJavaModuleIds = ref<string[]>([]);
 
 const javaModuleStageProgress = ref<Record<string, string[]>>({});
 const javaModuleAssessmentScores = ref<Record<string, number>>({});
+const msProgress = ref<Record<string, MsModuleProgressRecord>>({});
+const judgmentRecords = ref<Record<string, JudgmentAttemptRecord>>({});
   const currentDay = ref<number>(37);
   const streak = ref<number>(14);
   const studyTimeMinutes = ref<number>(142);
@@ -77,6 +101,16 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
         projectFeatures: projectFeatures.value,
         incidents: incidents.value,
         interviewQuestions: interviewQuestions.value,
+        // Evidence fields. These are ADDITIVE keys on the same
+        // SENIOR_JAVA_180_STATE_V1 record — reading is version-tolerant
+        // (absent => no evidence), so no destructive migration is required.
+        completedAiTopicIds: completedAiTopicIds.value,
+        completedEnglishItemIds: completedEnglishItemIds.value,
+        completedJavaModuleIds: completedJavaModuleIds.value,
+        javaModuleStageProgress: javaModuleStageProgress.value,
+        javaModuleAssessmentScores: javaModuleAssessmentScores.value,
+        msProgress: msProgress.value,
+        judgmentRecords: judgmentRecords.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -96,10 +130,45 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
     projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
     incidents.value = [...INITIAL_INCIDENTS];
     interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
+    completedAiTopicIds.value = [];
+    completedEnglishItemIds.value = [];
+    completedJavaModuleIds.value = [];
+    javaModuleStageProgress.value = {};
+    javaModuleAssessmentScores.value = {};
+    msProgress.value = {};
+    judgmentRecords.value = {};
     status.value = 'success';
     errorMessage.value = null;
     errorDetail.value = undefined;
     saveToStorage();
+  }
+
+  /**
+   * Storage readers for evidence fields. They are deliberately tolerant:
+   * a malformed or missing value yields "no evidence", never a fabricated
+   * default. Reading is separated from validation on purpose so a corrupted
+   * additive field can never take down the whole learner state.
+   */
+  function stringArray(value: unknown): string[] {
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  }
+
+  function stageProgressRecord(value: unknown): Record<string, string[]> {
+    if (!value || typeof value !== 'object') return {};
+    const result: Record<string, string[]> = {};
+    Object.entries(value as Record<string, unknown>).forEach(([key, raw]) => {
+      result[key] = stringArray(raw);
+    });
+    return result;
+  }
+
+  function scoreRecord(value: unknown): Record<string, number> {
+    if (!value || typeof value !== 'object') return {};
+    const result: Record<string, number> = {};
+    Object.entries(value as Record<string, unknown>).forEach(([key, raw]) => {
+      if (typeof raw === 'number' && Number.isFinite(raw)) result[key] = raw;
+    });
+    return result;
   }
 
   function loadFromStorage(): void {
@@ -124,6 +193,16 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
         interviewQuestions.value = Array.isArray(parsed.interviewQuestions)
           ? parsed.interviewQuestions
           : [...INITIAL_INTERVIEW_QUESTIONS];
+
+        // Evidence fields — read tolerantly. Absent key means "no evidence yet",
+        // never a fabricated default score.
+        completedAiTopicIds.value = stringArray(parsed.completedAiTopicIds);
+        completedEnglishItemIds.value = stringArray(parsed.completedEnglishItemIds);
+        completedJavaModuleIds.value = stringArray(parsed.completedJavaModuleIds);
+        javaModuleStageProgress.value = stageProgressRecord(parsed.javaModuleStageProgress);
+        javaModuleAssessmentScores.value = scoreRecord(parsed.javaModuleAssessmentScores);
+        msProgress.value = normalizeMsProgressRecords(parsed.msProgress);
+        judgmentRecords.value = normalizeJudgmentRecords(parsed.judgmentRecords);
       } else {
         // Initialize from seed
         currentDay.value = 37;
@@ -137,6 +216,13 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
         projectFeatures.value = [...INITIAL_PROJECT_FEATURES];
         incidents.value = [...INITIAL_INCIDENTS];
         interviewQuestions.value = [...INITIAL_INTERVIEW_QUESTIONS];
+        completedAiTopicIds.value = [];
+        completedEnglishItemIds.value = [];
+        completedJavaModuleIds.value = [];
+        javaModuleStageProgress.value = {};
+        javaModuleAssessmentScores.value = {};
+        msProgress.value = {};
+        judgmentRecords.value = {};
         saveToStorage();
       }
 
@@ -250,6 +336,19 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
   const weakest = computed(() => findWeakestDimension(knowledgeTopics.value));
 
   const nextAction = computed<NextActionInfo>(() => {
+    // 0. Unresolved production incident in the Microservices track outranks
+    //    everything: production truth before new theory.
+    const openMsIncident = msOpenIncidents.value[0];
+    if (openMsIncident) {
+      return {
+        title: `Triage ${openMsIncident.severity} incident: ${openMsIncident.title}`,
+        category: 'INCIDENT_LAB',
+        description: openMsIncident.symptomSummary,
+        targetRoute: '/learning/microservices',
+        actionLabel: 'Triage Incident',
+      };
+    }
+
     // 1. Check for unresolved P0 incidents
     const unresolvedP0 = incidents.value.find(
       (i) => i.status !== 'RESOLVED' && i.severity.startsWith('P0')
@@ -259,7 +358,7 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
         title: 'Break The System Incident Active',
         category: 'INCIDENT_LAB',
         description: `Triage P0 incident: ${unresolvedP0.title}`,
-        targetRoute: '/build/break-debug',
+        targetRoute: '/learning/microservices',
         actionLabel: 'Triage Incident',
       };
     }
@@ -306,11 +405,221 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
     return {
       title: 'Practice System Design or Mock Interview',
       category: 'INTERVIEW',
-      description: 'Daily tasks complete! Run a 45-minute timed System Design architecture round.',
-      targetRoute: '/learning/system-design',
-      actionLabel: 'Launch System Design',
+      description: 'Daily tasks complete! Run a 45-minute timed system design round and defend it out loud.',
+      targetRoute: '/interview',
+      actionLabel: 'Run Interview Round',
     };
   });
+
+  // --- Microservices Engineering Track (Phase P0-W1: reachability remediation) ---
+  //
+  // This slice is the ONLY production caller of `src/engines/microservices.ts`.
+  // Every write records real learner evidence and persists immediately.
+
+  function getMsModuleRecord(moduleId: string): MsModuleProgressRecord | undefined {
+    return msProgress.value[moduleId];
+  }
+
+  function ensureMsRecord(moduleId: string): MsModuleProgressRecord {
+    const existing = msProgress.value[moduleId];
+    if (existing) return existing;
+    return createEmptyProgressRecord(moduleId, new Date().toISOString());
+  }
+
+  function commitMsRecord(
+    moduleId: string,
+    mutate: (record: MsModuleProgressRecord) => MsModuleProgressRecord
+  ): void {
+    const now = new Date().toISOString();
+    const next = mutate(ensureMsRecord(moduleId));
+    msProgress.value = {
+      ...msProgress.value,
+      [moduleId]: { ...next, updatedAt: now },
+    };
+    saveToStorage();
+  }
+
+  /** LOOP STAGE — records a completed engineering-loop stage. */
+  function recordMsStage(moduleId: string, stage: MsLoopStage): void {
+    commitMsRecord(moduleId, (record) =>
+      record.stages.includes(stage) ? record : { ...record, stages: [...record.stages, stage] }
+    );
+  }
+
+  function recordMsCodeLab(moduleId: string, labId: string): void {
+    commitMsRecord(moduleId, (record) =>
+      record.codeLabCompletions.includes(labId)
+        ? record
+        : {
+            ...record,
+            stages: record.stages.includes('code') ? record.stages : [...record.stages, 'code'],
+            codeLabCompletions: [...record.codeLabCompletions, labId],
+          }
+    );
+  }
+
+  function recordMsFailureLab(moduleId: string, labId: string, passed: boolean): void {
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      stages: record.stages.includes('break') ? record.stages : [...record.stages, 'break'],
+      failureLabAttempts: record.failureLabAttempts + 1,
+      failureLabsPassed: passed
+        ? Array.from(new Set([...record.failureLabsPassed, labId]))
+        : record.failureLabsPassed,
+    }));
+  }
+
+  function recordMsBenchmark(moduleId: string, title: string): void {
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      stages: record.stages.includes('benchmark') ? record.stages : [...record.stages, 'benchmark'],
+      benchmarksCompleted: record.benchmarksCompleted.includes(title)
+        ? record.benchmarksCompleted
+        : [...record.benchmarksCompleted, title],
+    }));
+  }
+
+  function recordMsDesign(moduleId: string, challengeId: string): void {
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      stages: record.stages.includes('design') ? record.stages : [...record.stages, 'design'],
+      designsCompleted: record.designsCompleted.includes(challengeId)
+        ? record.designsCompleted
+        : [...record.designsCompleted, challengeId],
+    }));
+  }
+
+  function recordMsIncident(moduleId: string, incidentId: string): void {
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      incidentsResolved: record.incidentsResolved.includes(incidentId)
+        ? record.incidentsResolved
+        : [...record.incidentsResolved, incidentId],
+    }));
+  }
+
+  function recordMsAiChallenge(moduleId: string, prompt: string): void {
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      aiChallengesCompleted: record.aiChallengesCompleted.includes(prompt)
+        ? record.aiChallengesCompleted
+        : [...record.aiChallengesCompleted, prompt],
+    }));
+  }
+
+  function recordMsHintUse(moduleId: string): void {
+    commitMsRecord(moduleId, (record) => ({ ...record, hintsUsed: record.hintsUsed + 1 }));
+  }
+
+  /** EXPLANATION / DEFEND — self-scored against the module rubric (0-100). */
+  function recordMsSelfScore(
+    moduleId: string,
+    stage: 'explain' | 'defend',
+    scorePercent: number
+  ): void {
+    const clamped = Math.max(0, Math.min(100, Math.round(scorePercent)));
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      stages: record.stages.includes(stage) ? record.stages : [...record.stages, stage],
+      ...(stage === 'explain' ? { explanationScore: clamped } : { defenseScore: clamped }),
+    }));
+  }
+
+  /** ASSESS — records the graded score and pushes a weakness card when it fails. */
+  function recordMsAssessmentScore(moduleId: string, scorePercent: number): void {
+    const clamped = Math.max(0, Math.min(100, Math.round(scorePercent)));
+    commitMsRecord(moduleId, (record) => ({
+      ...record,
+      stages: record.stages.includes('assess') ? record.stages : [...record.stages, 'assess'],
+      assessmentScore: clamped,
+      attempts: record.attempts + 1,
+    }));
+  }
+
+const msModules = ALL_MS_MODULES;
+
+  const msCompletedModuleIds = computed<string[]>(() =>
+    msModules
+      .filter((module) => isModuleComplete(module, msProgress.value[module.id]))
+      .map((module) => module.id)
+  );
+
+  const msTrackProgress = computed(() =>
+    computeTrackProgress(msModules, msProgress.value, msCompletedModuleIds.value)
+  );
+
+  const msCompetencies = computed<CompetencyReadiness[]>(() =>
+    calculateMsCompetencies(msModules, msProgress.value)
+  );
+
+  const msOpenIncidents = computed(() => {
+    const resolved = new Set(Object.values(msProgress.value).flatMap((r) => r.incidentsResolved));
+    return ALL_MS_INCIDENTS.filter((incident) => !resolved.has(incident.id));
+  });
+
+  const msProgressPercent = computed(() => msTrackProgress.value.percent);
+
+  // --- Phase A — Engineering Judgment -----------------------------------
+  //
+  // The store owns the *record*; the engine owns the *evaluation*. A record
+  // only exists once the learner has actually submitted a decision.
+
+  const judgmentScenarios: readonly JudgmentScenario[] = JUDGMENT_SCENARIOS;
+
+  const judgmentProgress = computed(() =>
+    computeJudgmentTrackProgress(JUDGMENT_SCENARIOS, judgmentRecords.value)
+  );
+
+  const judgmentRemediation = computed(() =>
+    selectJudgmentRemediation(JUDGMENT_SCENARIOS, judgmentRecords.value)
+  );
+
+  /**
+   * Records one decision attempt. Returns the full evaluation so the UI can
+   * show the audit trail. Persisted immediately.
+   */
+  function submitJudgment(scenarioId: string, submission: DecisionSubmission): JudgmentEvaluation {
+    const scenario = JUDGMENT_SCENARIOS.find((item) => item.id === scenarioId);
+    if (!scenario) {
+      throw new Error(`Unknown judgment scenario: ${scenarioId}`);
+    }
+    const evaluation = evaluateJudgment(scenario, submission);
+    const record: JudgmentAttemptRecord = {
+      scenarioId,
+      level: evaluation.level,
+      score: evaluation.score,
+      correctDecision: evaluation.correctDecision,
+      confidence: submission.confidence,
+      calibrationVerdict: evaluation.calibrationVerdict,
+      calibrationError: evaluation.calibrationError,
+      attemptedAt: new Date().toISOString(),
+    };
+    judgmentRecords.value = { ...judgmentRecords.value, [scenarioId]: record };
+    saveToStorage();
+    return evaluation;
+  }
+
+// --- Phase Z — Senior Engineering Certification -----------------------
+  //
+  // Pure derivation: no score is stored, none is hardcoded. Recomputed from
+  // the persisted evidence on every access.
+
+  const certification = computed<CertificationVerdict>(() =>
+    evaluateCertification({
+      msModules: ALL_MS_MODULES,
+      msProgress: msProgress.value,
+      judgmentRecords: judgmentRecords.value,
+      javaCompletedModuleIds: completedJavaModuleIds.value,
+      javaModuleStageProgress: javaModuleStageProgress.value,
+      completedEnglishItemIds: completedEnglishItemIds.value,
+      completedEnglishTotal: TECHNICAL_ENGLISH_ITEMS.length,
+      completedAiTopicIds: completedAiTopicIds.value,
+      completedAiTotal: AI_SENIOR_JAVA_ITEMS.length,
+      knowledgeTopicCount: knowledgeTopics.value.length,
+      masteredKnowledgeTopicCount: knowledgeTopics.value.filter((topic) => topic.status === 'MASTERED').length,
+      judgmentScenarioTotal: JUDGMENT_SCENARIOS.length,
+    })
+  );
 
   function setTaskState(taskId: string, state: TaskState): void {
     tasks.value = tasks.value.map((t) => {
@@ -384,6 +693,11 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
       incidents: incidents.value,
       completedAiTopicIds: completedAiTopicIds.value,
       completedEnglishItemIds: completedEnglishItemIds.value,
+      completedJavaModuleIds: completedJavaModuleIds.value,
+      javaModuleStageProgress: javaModuleStageProgress.value,
+      javaModuleAssessmentScores: javaModuleAssessmentScores.value,
+      msProgress: msProgress.value,
+      judgmentRecords: judgmentRecords.value,
       exportedAt: new Date().toISOString(),
     };
     return JSON.stringify(data, null, 2);
@@ -409,6 +723,19 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
       if (Array.isArray(parsed.incidents)) incidents.value = parsed.incidents;
       if (Array.isArray(parsed.completedAiTopicIds)) completedAiTopicIds.value = parsed.completedAiTopicIds;
       if (Array.isArray(parsed.completedEnglishItemIds)) completedEnglishItemIds.value = parsed.completedEnglishItemIds;
+      if (Array.isArray(parsed.completedJavaModuleIds)) completedJavaModuleIds.value = parsed.completedJavaModuleIds;
+      if (parsed.javaModuleStageProgress && typeof parsed.javaModuleStageProgress === 'object') {
+        javaModuleStageProgress.value = stageProgressRecord(parsed.javaModuleStageProgress);
+      }
+      if (parsed.javaModuleAssessmentScores && typeof parsed.javaModuleAssessmentScores === 'object') {
+        javaModuleAssessmentScores.value = scoreRecord(parsed.javaModuleAssessmentScores);
+      }
+      if (parsed.msProgress && typeof parsed.msProgress === 'object') {
+        msProgress.value = normalizeMsProgressRecords(parsed.msProgress);
+      }
+      if (parsed.judgmentRecords && typeof parsed.judgmentRecords === 'object') {
+        judgmentRecords.value = normalizeJudgmentRecords(parsed.judgmentRecords);
+      }
 
       status.value = 'success';
       errorMessage.value = null;
@@ -565,5 +892,29 @@ const javaModuleAssessmentScores = ref<Record<string, number>>({});
     competencies,
     weakest,
     nextAction,
+    msModules,
+    msProgress,
+    msCompletedModuleIds,
+    msTrackProgress,
+    msProgressPercent,
+    msCompetencies,
+    msOpenIncidents,
+    getMsModuleRecord,
+    recordMsStage,
+    recordMsCodeLab,
+    recordMsFailureLab,
+    recordMsBenchmark,
+    recordMsDesign,
+    recordMsIncident,
+    recordMsAiChallenge,
+    recordMsHintUse,
+    recordMsSelfScore,
+    recordMsAssessmentScore,
+    judgmentScenarios,
+    judgmentRecords,
+    judgmentProgress,
+    judgmentRemediation,
+    submitJudgment,
+    certification,
   };
 });

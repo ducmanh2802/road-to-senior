@@ -254,6 +254,7 @@ export const MS_COMPETENCY_DIMENSIONS: MsCompetencyDimension[] = [
   'debugging',
   'communication',
   'system-design',
+  'security',
   'production-engineering',
 ];
 

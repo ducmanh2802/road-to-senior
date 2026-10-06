@@ -419,7 +419,7 @@ class FeignConfig {
       [
         'Analyze the security risk of forwarding user identity via unverified custom headers (e.g., X-User-Id: 12345).',
         'If an internal service trusts X-User-Id without verifying a signed JWT, any compromised service or internal attacker can spoof arbitrary user IDs and access unauthorized resources.',
-        'distributed-systems',
+        'security',
       ],
     ],
     labs: [
@@ -531,7 +531,7 @@ class FeignTokenRelayInterceptor : RequestInterceptor {
           '#2 rejected: Gateway routing table is static and verified.',
         ],
         investigate: [
-          ['grep -rn "getHeader(\"X-Tenant-Id\")" services/order-service', 'Found tenantId = request.getHeader("X-Tenant-Id")', 'Unverified header directly feeds database query.'],
+          ['grep -rn "getHeader("X-Tenant-Id")" services/order-service', 'Found tenantId = request.getHeader("X-Tenant-Id")', 'Unverified header directly feeds database query.'],
           ['grep -rn "SecurityContextHolder" services/order-service', 'SecurityContext is inspected for authentication but claims are ignored', 'Authentication succeeds but authorization uses spoofable input.'],
         ],
         debugOptions: [
@@ -555,7 +555,7 @@ class FeignTokenRelayInterceptor : RequestInterceptor {
         modelExplanation:
           'HTTP headers can be set by any external client unless explicitly stripped by an edge proxy. When microservices rely on custom headers like X-Tenant-Id or X-User-Id, a failure in edge sanitization or an internal network breach allows attackers to impersonate any user. Signed JWT claims cannot be tampered with without invalidating the cryptographic signature.',
         patterns: ['Zero Trust', 'Defense in Depth', 'BOLA / IDOR Prevention', 'Cryptographic Claims'],
-        dimension: 'reliability',
+        dimension: 'security',
       },
     ],
     design: {
@@ -599,7 +599,7 @@ class FeignTokenRelayInterceptor : RequestInterceptor {
       [
         'A team proposes using 24-hour JWT access tokens to minimize load on the Authorization Server. Argue against.',
         'A 24-hour access token represents a 24-hour window of vulnerability if leaked. Because stateless JWTs cannot be revoked without maintaining a centralized revocation list (which negates the stateless benefit), compromised tokens remain valid for a full day. The industry standard is 5–15 minute access tokens with refresh tokens rotated on every use.',
-        'reliability',
+        'security',
         ['Highlights security blast radius.', 'Explains stateless revocation limits.', 'Proposes short-lived tokens + refresh tokens.'],
       ],
       [

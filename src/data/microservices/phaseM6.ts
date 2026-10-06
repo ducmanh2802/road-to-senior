@@ -205,7 +205,7 @@ export const MS_M6_MODULES: MsModule[] = [
         ],
         investigate: [
           ['jstack $(pgrep -f order-service) | grep -A 5 "ConsoleAppender"', 'Found 48 threads waiting on lock <0x00000007> held by thread-12', 'System.out lock contention verified.'],
-          ['grep -A 10 "appender name=\"CONSOLE\"" src/main/resources/logback.xml', 'ConsoleAppender is not wrapped in AsyncAppender', 'Synchronous logging confirmed.'],
+          ['grep -A 10 "appender name="CONSOLE"" src/main/resources/logback.xml', 'ConsoleAppender is not wrapped in AsyncAppender', 'Synchronous logging confirmed.'],
         ],
         debugOptions: [
           'Synchronous stdout logging blocks application threads on OS I/O locks.',
@@ -820,7 +820,7 @@ class OrderMetricsService(private val meterRegistry: MeterRegistry) {
           '#2 rejected: database shows abandoned carts climbing by 300%.',
         ],
         investigate: [
-          ['curl -s http://localhost:8080/actuator/prometheus | grep "quantile=\"0.99\""', 'p99 quantile is 10.02 seconds', 'Tail latency explosion confirmed.'],
+          ['curl -s http://localhost:8080/actuator/prometheus | grep "quantile="0.99""', 'p99 quantile is 10.02 seconds', 'Tail latency explosion confirmed.'],
           ['grep -A 3 "expr: " alerts/checkout-latency.yml', 'Alert rule evaluates `rate(sum) / rate(count) > 0.5`', 'Alert is mathematically blind to outliers.'],
         ],
         debugOptions: [

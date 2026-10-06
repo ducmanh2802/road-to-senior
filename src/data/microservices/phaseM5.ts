@@ -682,7 +682,7 @@ class FeignTokenRelayInterceptor : RequestInterceptor {
     subtitle:
       'Order-to-payment lifecycle, deterministic idempotency keys, out-of-order webhook delivery, state transition invariants, and background reconciliation',
     minutes: 210,
-    prerequisites: ['M5.2', 'M4.4'],
+    prerequisites: ['M5.2', 'M4.2'],
     objective:
       'Engineer a hardened payment processing workflow: generate deterministic idempotency keys, execute two-phase payment intent creation, handle duplicate and out-of-order webhook events safely, and run reconciliation audits.',
     stack: ['Spring Boot 4.1', 'PostgreSQL', 'Stripe API Simulator', 'Redis Idempotency Store', 'Flyway'],

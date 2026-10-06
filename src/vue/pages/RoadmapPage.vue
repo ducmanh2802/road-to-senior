@@ -203,6 +203,19 @@ function handleSetCurrentDay(dayNumber: number): void {
       </div>
     </div>
 
+    <!-- Curriculum coverage honesty note (P10/P11 recovery §2 P0):
+         The 180-day roadmap renders the real curated day specifications from
+         the canonical store (no synthetic days). Coverage depth per track is
+         documented in docs/SENIOR_JAVA_180_ROADMAP_RECOVERY.md. -->
+    <div
+      class="bg-[#101623] border border-[#1B2433] rounded-lg px-4 py-2.5 text-[11px] font-mono text-[#64748B]"
+      data-testid="curriculum-coverage-note"
+    >
+      Showing {{ filteredDays.length }} curated day specification(s) from the canonical roadmap store.
+      Java Core (20 modules: 1.1–1.3 active, 1.4–3.7 locked) · Microservices M1–M6 (22 modules) · remaining
+      180-day days tracked as MISSING_CURRICULUM, never synthetic.
+    </div>
+
     <!-- Main Roadmap Split View: List on Left, Day Detail Drawer on Right -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left 2 Cols: Timeline list of days -->

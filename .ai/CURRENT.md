@@ -1,13 +1,14 @@
 # CURRENT STATE
 
-Last Updated: 2026-10-05
+Last Updated: 2026-10-06
 Project: Senior Java 180 (client-side learning platform; no backend)
 Current frontend: Vue 3 (hard-cutover complete for implemented slices; entry = src/vue/main.ts);
   React source retained as migration reference only
 Target frontend: Vue 3 + TypeScript + Vue Router + Pinia
 Backend: none (target: Java 25 / Spring Boot 4.1.x — NOT started)
-Current phase: Phase P0-W1 + Phase A + Phase Z completed — Senior Engineering Mastery execution wave
-Certification verdict: NOT_CERTIFIED (by design — Leadership has no evidence source; see
+Current phase: Phase P10/P11-REC completed — Full Roadmap Recovery + Real-Browser Golden Path (PASS)
+Certification verdict: RUNTIME PASS for implemented scope (P10/P11 recovery);
+  senior-title verdict remains NOT_CERTIFIED by design (Leadership has no evidence source; see
   docs/SENIOR_ENGINEERING_FINAL_CERTIFICATION.md)
 
 ## ACTIVE MISSION: SENIOR ENGINEERING MASTERY (A–Z)
@@ -41,6 +42,18 @@ Completed in this wave:
 
 Gates (executed 2026-10-05): typecheck PASS · tests PASS 22 files / 245 tests · eslint PASS 0 errors ·
 build PASS 1.74s · vite preview HTTP 200 · vite dev HTTP 200 · Google AI Studio PASS.
+
+Phase P10/P11-REC (executed 2026-10-06 — FULL ROADMAP RECOVERY → REAL BROWSER GOLDEN PATH → PASS):
+  - Forensic audit: 24 curated roadmap days (MISSING_CURRICULUM disclosed, nothing invented),
+    Java 20 mods (1.1–1.3 active), MS 22 mods M1–M6, 8 judgment scenarios, 12 honest placeholders.
+  - Root-cause fix: M5.3 permanently LOCKED via orphan prereq M4.4 → repointed to M4.2
+    (+ 2 regression tests); stale M4.4 code-comment corrected; /senior-java-180 alias added;
+    roadmap coverage note added; 12 lint warnings removed (0 errors).
+  - Real browser (3 scripted runs, dev :5199): golden path, lesson execution, persistence/reload,
+    alias, 360/768/1440 zero-overflow, a11y, corrupt-state graceful — 0 console errors, 0 failed requests.
+  - Gates: typecheck PASS · tests PASS 22 files / 247 tests · eslint 0 errors · build PASS.
+  - Docs: docs/SENIOR_JAVA_180_ROADMAP_RECOVERY.md, docs/SENIOR_JAVA_180_RUNTIME_CERTIFICATION.md.
+  - Record: .ai/phases/phase-p10-p11-recovery.md. M7 = PLANNED/non-blocking (no M7 files exist).
 
 Next agent action: continue the A–Z mission at the next P1 phase.
   Candidates in priority order: Phase N (ADR engine, GAP-14), Phase Q (CI/CD pipeline, GAP-20),

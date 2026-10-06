@@ -210,3 +210,29 @@ describe('Phase M5 — Spring Cloud, Security, Polyglot Data & Resilience', () =
     expect(inc.postmortem.rootCause).toContain('payment provider');
   });
 });
+
+describe('P10/P11 recovery — roadmap graph integrity (no orphan prerequisites)', () => {
+  it('every microservices prerequisite resolves to a real module (M5.3/M4.4 regression)', () => {
+    const ids = new Set(ALL_MS_MODULES.map((m) => m.id));
+    for (const mod of ALL_MS_MODULES) {
+      for (const prereq of mod.prerequisites) {
+        expect(ids.has(prereq)).toBe(true);
+      }
+    }
+  });
+
+  it('M5.3 unlocks once M5.2 and M4.2 are complete (was permanently LOCKED via M4.4)', () => {
+    const m53 = ALL_MS_MODULES.find((m) => m.id === 'M5.3');
+    expect(m53).toBeDefined();
+    expect(m53!.prerequisites).toEqual(['M5.2', 'M4.2']);
+    const completed = [
+      'M1.1', 'M1.2', 'M1.3',
+      'M2.1', 'M2.2', 'M2.3',
+      'M3.1', 'M3.2', 'M3.3',
+      'M4.1', 'M4.2',
+      'M5.1', 'M5.2',
+    ];
+    expect(isModuleUnlocked(m53!, completed)).toBe(true);
+    expect(getModuleStatus(m53!, undefined, completed)).toBe('NOT_STARTED');
+  });
+});

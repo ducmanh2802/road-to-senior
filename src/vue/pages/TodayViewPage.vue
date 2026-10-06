@@ -117,10 +117,6 @@ function stateLabel(state: TaskState): string {
   return TASK_STATE_LABELS[state] ?? state;
 }
 
-function statusLabel(status: TaskStatusFilter): string {
-  return status === 'ALL' ? 'All' : stateLabel(status);
-}
-
 function stateTextClass(state: TaskState): string {
   return TASK_STATE_TEXT_CLASSES[state] ?? 'text-[#94A3B8]';
 }

@@ -170,7 +170,7 @@ class InventoryController(private val reservations: ReservationApplicationServic
 class CheckoutOrchestrator(
   private val inventory: InventoryClient,
   private val payments: PaymentClient,
-  private val outbox: OutboxWriter,   // publish after commit (M4.4)
+  private val outbox: OutboxWriter,   // publish after commit (outbox relay)
 ) {
   @Transactional
   fun checkout(command: CheckoutCommand): CheckoutResult { /* TODO: order the steps, bound the calls */ }

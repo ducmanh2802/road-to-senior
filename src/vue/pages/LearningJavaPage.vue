@@ -11,23 +11,13 @@ import {
   CheckCircle2,
   Layers,
   Lock,
-  Search,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  FileCode2,
-  Sparkles,
-  Zap,
-  Activity,
-  Trophy,
   ShieldAlert,
-  ArrowRight,
   ShieldCheck,
   Terminal,
+  Zap,
 } from 'lucide-vue-next';
 import PageHeader from '../components/PageHeader.vue';
 import CodeBlock from '../components/ui/CodeBlock.vue';
-import ProgressBar from '../components/ProgressBar.vue';
 import JavaCoreAssessment from '../components/JavaCoreAssessment.vue';
 import JavaFailureLab from '../components/JavaFailureLab.vue';
 import {

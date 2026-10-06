@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
 import PagePlaceholder from '../pages/PagePlaceholder.vue';
-import ReviewPage from '../pages/ReviewPage.vue';
 
 /**
  * Canonical route table — single source of truth.
@@ -26,6 +25,14 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/learning',
     name: 'learning',
+    redirect: '/learning/roadmap',
+  },
+  {
+    // Canonical alias required by the P10/P11 recovery spec (§12 ROUTER AUDIT):
+    // a single discoverable entry route for SENIOR JAVA 180. Pure redirect —
+    // no duplicate page definition, no contract change.
+    path: '/senior-java-180',
+    name: 'senior-java-180',
     redirect: '/learning/roadmap',
   },
   {
